@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  <!-- Homepage -->
+  <url>
+    <loc>https://www.izkatech.com/</loc>
+    <lastmod>2026-09-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Layanan ICT & Mechanical Electrical (Services) -->
+  <url>
+    <loc>https://www.izkatech.com/#services</loc>
+    <lastmod>2026-09-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Solusi & Prinsipal Brand Partner (CCTV, Access Control, Network Security, Telecom, Hardware) -->
+  <url>
+    <loc>https://www.izkatech.com/#partner</loc>
+    <lastmod>2026-09-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Profil Perusahaan & Tentang Kami (About Us) -->
+  <url>
+    <loc>https://www.izkatech.com/#about</loc>
+    <lastmod>2026-09-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Company Profile Slide Deck Interactive Presentation -->
+  <url>
+    <loc>https://www.izkatech.com/#presentation</loc>
+    <lastmod>2026-09-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- Portofolio Proyek & Klien (Projects) -->
+  <url>
+    <loc>https://www.izkatech.com/#projects</loc>
+    <lastmod>2026-09-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- Kontak, Konsultasi & Permintaan Penawaran Tender (Contact & RFP) -->
+  <url>
+    <loc>https://www.izkatech.com/#contact</loc>
+    <lastmod>2026-09-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+</urlset>

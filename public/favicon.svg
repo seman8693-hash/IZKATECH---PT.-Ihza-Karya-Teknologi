@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="waveGradBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#1e40af" />
+    </linearGradient>
+    <linearGradient id="waveGradCyan" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#22d3ee" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="#020617" />
+  <circle cx="50" cy="50" r="44" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.35" />
+  <ellipse cx="50" cy="50" rx="40" ry="22" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5 2.5" transform="rotate(-25 50 50)" opacity="0.95" />
+  <ellipse cx="50" cy="50" rx="38" ry="18" stroke="#38bdf8" stroke-width="2" transform="rotate(35 50 50)" opacity="0.9" />
+  <circle cx="50" cy="50" r="30" stroke="#0284c7" stroke-width="1.5" opacity="0.6" />
+  <path d="M20 50 Q50 25 80 50" stroke="#fbbf24" stroke-width="2.2" fill="none" opacity="0.95" />
+  <path d="M20 50 Q50 75 80 50" stroke="#06b6d4" stroke-width="2" fill="none" opacity="0.85" />
+  <path d="M22 68 C35 60, 50 82, 78 68 C68 84, 38 84, 22 68 Z" fill="url(#waveGradBlue)" />
+  <path d="M24 74 C40 68, 54 84, 76 72 C64 88, 36 88, 24 74 Z" fill="url(#waveGradCyan)" opacity="0.9" />
+  <circle cx="34" cy="36" r="2.5" fill="#fbbf24" />
+  <circle cx="68" cy="40" r="2.5" fill="#38bdf8" />
+  <circle cx="52" cy="28" r="2" fill="#22d3ee" />
+</svg>

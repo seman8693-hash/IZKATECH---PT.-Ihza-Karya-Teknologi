@@ -1,0 +1,6 @@
+{
+  "name": "IZKATECH - PT. Ihza Karya Teknologi",
+  "description": "Website resmi PT. Ihza Karya Teknologi (IZKATECH) - ICT System Integrator & Mechanical Electrical Solutions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

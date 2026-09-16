@@ -1,0 +1,38 @@
+# ========================================================
+# Robots.txt for PT. Ihza Karya Teknologi (IZKATECH)
+# Website: https://www.izkatech.com
+# Purpose: Maximizing search engine indexing (Google, Bing, Yahoo, Yandex, DuckDuckGo)
+# ========================================================
+
+User-agent: *
+Allow: /
+Allow: /sitemap.xml
+Allow: /assets/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /*.json$
+
+# Googlebot specific optimizations
+User-agent: Googlebot
+Allow: /
+Allow: /assets/
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.svg$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.webp$
+
+# Googlebot-Image
+User-agent: Googlebot-Image
+Allow: /
+Allow: /assets/
+
+# Bingbot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Host & XML Sitemap Location
+Host: https://www.izkatech.com
+Sitemap: https://www.izkatech.com/sitemap.xml
