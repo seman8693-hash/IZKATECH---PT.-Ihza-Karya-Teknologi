@@ -28,18 +28,28 @@ export default function App() {
   const [isAdminView, setIsAdminView] = useState<boolean>(false);
 
   useEffect(() => {
-    const handleHashChange = () => {
+    const checkAdminRoute = () => {
       const hash = window.location.hash.toLowerCase();
-      if (hash === '#/admin' || hash === '#admin') {
+      const pathname = window.location.pathname.toLowerCase();
+      if (
+        hash === '#/admin' || 
+        hash === '#admin' || 
+        pathname === '/admin' || 
+        pathname.startsWith('/admin')
+      ) {
         setIsAdminView(true);
       } else {
         setIsAdminView(false);
       }
     };
 
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    checkAdminRoute();
+    window.addEventListener('hashchange', checkAdminRoute);
+    window.addEventListener('popstate', checkAdminRoute);
+    return () => {
+      window.removeEventListener('hashchange', checkAdminRoute);
+      window.removeEventListener('popstate', checkAdminRoute);
+    };
   }, []);
 
   const handleOpenEstimator = (serviceTitle?: string) => {
@@ -75,6 +85,7 @@ export default function App() {
         setLang={setLang}
         onOpenEstimator={() => handleOpenEstimator()}
         onOpenSlideDeck={() => setIsSlideDeckOpen(true)}
+        onOpenAdmin={handleOpenAdmin}
       />
 
       {/* Main Content Sections */}

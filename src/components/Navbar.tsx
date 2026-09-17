@@ -2,20 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Logo } from './Logo.tsx';
 import { COMPANY_INFO } from '../data/companyData.ts';
 import { FacebookIcon, TikTokIcon, InstagramIcon } from './SocialIcons.tsx';
-import { Menu, X, Phone, MessageSquare, Calculator, ChevronRight } from 'lucide-react';
+import { Menu, X, Phone, MessageSquare, Calculator, ChevronRight, Lock } from 'lucide-react';
 
 interface NavbarProps {
   lang: 'id' | 'en';
   setLang: (lang: 'id' | 'en') => void;
   onOpenEstimator: () => void;
   onOpenSlideDeck?: () => void;
+  onOpenAdmin?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ 
   lang, 
   setLang, 
   onOpenEstimator,
-  onOpenSlideDeck 
+  onOpenSlideDeck,
+  onOpenAdmin 
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -142,6 +144,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
+          {/* Portal Admin CTA */}
+          <button
+            id="nav-admin-btn"
+            onClick={onOpenAdmin || (() => { window.location.hash = '/admin'; })}
+            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-300 bg-slate-900/90 hover:text-cyan-300 hover:border-cyan-500/50 hover:bg-slate-800 border border-slate-800 rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0"
+            title="Masuk ke Portal Admin"
+          >
+            <Lock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+            <span>Portal Admin</span>
+          </button>
+
           {/* RFP / Estimator CTA */}
           <button
             id="nav-estimator-btn"
@@ -234,6 +247,21 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Calculator className="w-4 h-4 text-cyan-400" />
               {lang === 'id' ? 'Kalkulator Estimasi Kebutuhan (RFP)' : 'RFP Requirements Calculator'}
             </button>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (onOpenAdmin) {
+                  onOpenAdmin();
+                } else {
+                  window.location.hash = '/admin';
+                }
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-slate-900/90 border border-slate-700 text-xs font-semibold text-cyan-300 hover:bg-slate-800"
+            >
+              <Lock className="w-4 h-4 text-cyan-400" />
+              <span>Masuk Portal Admin (Staff / Internal)</span>
+            </button>
+
             <a
               href={`https://wa.me/${COMPANY_INFO.whatsappNumber}?text=Halo%20PT.%20Ihza%20Karya%20Teknologi,%20saya%20ingin%20konsultasi`}
               target="_blank"

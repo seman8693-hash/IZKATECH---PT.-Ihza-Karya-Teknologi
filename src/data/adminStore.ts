@@ -1,8 +1,10 @@
-import { AdminInquiry, AdminProject, AdminNotification } from '../types/admin.ts';
+import { AdminInquiry, AdminProject, AdminNotification, ChatSession, ChatMessage } from '../types/admin.ts';
 
 const INQUIRIES_STORAGE_KEY = 'izkatech_admin_inquiries';
 const PROJECTS_STORAGE_KEY = 'izkatech_admin_projects';
 const AUTH_STORAGE_KEY = 'izkatech_admin_session';
+const CHAT_SESSIONS_STORAGE_KEY = 'izkatech_chat_sessions';
+const CURRENT_VISITOR_SESSION_KEY = 'izkatech_current_visitor_session_id';
 
 const INITIAL_INQUIRIES: AdminInquiry[] = [
   {
@@ -148,6 +150,17 @@ export const saveInquiry = (inquiry: Omit<AdminInquiry, 'id' | 'timestamp' | 'st
   return newInquiry;
 };
 
+export const updateInquiry = (updatedInquiry: AdminInquiry) => {
+  const current = getStoredInquiries();
+  const updated = current.map(item => item.id === updatedInquiry.id ? updatedInquiry : item);
+  try {
+    localStorage.setItem(INQUIRIES_STORAGE_KEY, JSON.stringify(updated));
+  } catch (e) {
+    console.error('Failed to update inquiry', e);
+  }
+  return updated;
+};
+
 export const updateInquiryStatus = (id: string, status: AdminInquiry['status']) => {
   const current = getStoredInquiries();
   const updated = current.map(item => item.id === id ? { ...item, status } : item);
@@ -198,6 +211,17 @@ export const saveProject = (project: Omit<AdminProject, 'id'>): AdminProject => 
   return newProject;
 };
 
+export const updateProject = (updatedProject: AdminProject): AdminProject[] => {
+  const current = getStoredProjects();
+  const updated = current.map(p => p.id === updatedProject.id ? updatedProject : p);
+  try {
+    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(updated));
+  } catch (e) {
+    console.error('Failed to update project', e);
+  }
+  return updated;
+};
+
 export const deleteProject = (id: string) => {
   const current = getStoredProjects();
   const updated = current.filter(p => p.id !== id);
@@ -227,4 +251,190 @@ export const setAdminAuth = (authenticated: boolean) => {
   } catch (e) {
     console.error('Auth storage error', e);
   }
+};
+
+// -------------------------------------------------------------
+// LIVE CHAT & CRM SYSTEM STORE
+// -------------------------------------------------------------
+const INITIAL_CHAT_SESSIONS: ChatSession[] = [
+  {
+    id: 'CHAT-2026-001',
+    visitorName: 'Pak Rian Kurniawan',
+    visitorCompany: 'PT. Multi Fabrindo Logistik',
+    visitorPhone: '0812-3490-1122',
+    visitorEmail: 'rian.k@multifabrindo.com',
+    serviceInterest: 'CCTV Surveillance & Access Control',
+    createdAt: '2026-09-16 09:30',
+    lastActive: '2026-09-16 09:42',
+    status: 'active',
+    unreadCountAdmin: 1,
+    unreadCountVisitor: 0,
+    messages: [
+      {
+        id: 'msg-001',
+        sender: 'system',
+        senderName: 'Sistem IZKATECH',
+        text: 'Selamat datang di Live Support CRM PT. Ihza Karya Teknologi. Tim Solution Architect siap membantu.',
+        timestamp: '09:30'
+      },
+      {
+        id: 'msg-002',
+        sender: 'visitor',
+        senderName: 'Pak Rian Kurniawan',
+        text: 'Halo, saya mau menanyakan paket upgrade CCTV 32 channel IP camera Hikvision untuk gudang Cikarang, apakah bisa request survei lokasi minggu ini?',
+        timestamp: '09:32'
+      },
+      {
+        id: 'msg-003',
+        sender: 'admin',
+        senderName: 'Eng. Dimas (Technical Support)',
+        text: 'Halo Pak Rian, tentu bisa. Tim engineer kami siap jadwalkan site survey teknis. Apakah sudah ada layout denah kabelnya?',
+        timestamp: '09:36'
+      },
+      {
+        id: 'msg-004',
+        sender: 'visitor',
+        senderName: 'Pak Rian Kurniawan',
+        text: 'Sudah ada format PDF-nya, nanti saya kirimkan ke tim lapangan saat survei.',
+        timestamp: '09:42'
+      }
+    ]
+  }
+];
+
+export const getStoredChatSessions = (): ChatSession[] => {
+  try {
+    const raw = localStorage.getItem(CHAT_SESSIONS_STORAGE_KEY);
+    if (!raw) {
+      localStorage.setItem(CHAT_SESSIONS_STORAGE_KEY, JSON.stringify(INITIAL_CHAT_SESSIONS));
+      return INITIAL_CHAT_SESSIONS;
+    }
+    return JSON.parse(raw);
+  } catch {
+    return INITIAL_CHAT_SESSIONS;
+  }
+};
+
+export const saveChatSessions = (sessions: ChatSession[]) => {
+  try {
+    localStorage.setItem(CHAT_SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+    // Trigger custom event so other components update in real-time
+    window.dispatchEvent(new Event('izkatech_chat_updated'));
+  } catch (e) {
+    console.error('Failed to save chat sessions', e);
+  }
+};
+
+export const getOrCreateVisitorSession = (initialData?: {
+  name: string;
+  phone?: string;
+  email?: string;
+  company?: string;
+  service?: string;
+}): ChatSession => {
+  const sessions = getStoredChatSessions();
+  const currentId = localStorage.getItem(CURRENT_VISITOR_SESSION_KEY);
+
+  if (currentId) {
+    const found = sessions.find(s => s.id === currentId);
+    if (found) return found;
+  }
+
+  const now = new Date();
+  const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${timeStr}`;
+
+  const newId = `CHAT-${now.getFullYear()}-${String(sessions.length + 1).padStart(3, '0')}`;
+  const newSession: ChatSession = {
+    id: newId,
+    visitorName: initialData?.name || 'Tamu Pengunjung',
+    visitorPhone: initialData?.phone || '',
+    visitorEmail: initialData?.email || '',
+    visitorCompany: initialData?.company || '',
+    serviceInterest: initialData?.service || 'Konsultasi Umum ME & ICT',
+    createdAt: dateStr,
+    lastActive: dateStr,
+    status: 'active',
+    unreadCountAdmin: 0,
+    unreadCountVisitor: 0,
+    messages: [
+      {
+        id: `msg-${Date.now()}-init`,
+        sender: 'system',
+        senderName: 'Sistem CRM IZKATECH',
+        text: 'Selamat datang di Live Chat PT. Ihza Karya Teknologi! Pesan Anda terhubung langsung ke Dashboard Engineer & Customer Support kami.',
+        timestamp: timeStr
+      }
+    ]
+  };
+
+  const updated = [newSession, ...sessions];
+  saveChatSessions(updated);
+  localStorage.setItem(CURRENT_VISITOR_SESSION_KEY, newId);
+  return newSession;
+};
+
+export const sendChatMessage = (
+  sessionId: string,
+  text: string,
+  sender: 'visitor' | 'admin',
+  senderName: string
+): ChatSession[] => {
+  const sessions = getStoredChatSessions();
+  const now = new Date();
+  const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${timeStr}`;
+
+  const updated = sessions.map(session => {
+    if (session.id === sessionId) {
+      const newMsg: ChatMessage = {
+        id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        sender,
+        senderName,
+        text,
+        timestamp: timeStr
+      };
+      return {
+        ...session,
+        lastActive: dateStr,
+        unreadCountAdmin: sender === 'visitor' ? session.unreadCountAdmin + 1 : session.unreadCountAdmin,
+        unreadCountVisitor: sender === 'admin' ? session.unreadCountVisitor + 1 : session.unreadCountVisitor,
+        messages: [...session.messages, newMsg]
+      };
+    }
+    return session;
+  });
+
+  saveChatSessions(updated);
+  return updated;
+};
+
+export const markChatAsRead = (sessionId: string, by: 'admin' | 'visitor') => {
+  const sessions = getStoredChatSessions();
+  const updated = sessions.map(session => {
+    if (session.id === sessionId) {
+      return {
+        ...session,
+        unreadCountAdmin: by === 'admin' ? 0 : session.unreadCountAdmin,
+        unreadCountVisitor: by === 'visitor' ? 0 : session.unreadCountVisitor,
+      };
+    }
+    return session;
+  });
+  saveChatSessions(updated);
+  return updated;
+};
+
+export const updateChatSessionStatus = (sessionId: string, status: ChatSession['status']) => {
+  const sessions = getStoredChatSessions();
+  const updated = sessions.map(s => s.id === sessionId ? { ...s, status } : s);
+  saveChatSessions(updated);
+  return updated;
+};
+
+export const deleteChatSession = (sessionId: string) => {
+  const sessions = getStoredChatSessions();
+  const updated = sessions.filter(s => s.id !== sessionId);
+  saveChatSessions(updated);
+  return updated;
 };

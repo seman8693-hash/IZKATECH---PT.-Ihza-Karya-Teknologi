@@ -33,3 +33,26 @@ export interface AdminNotification {
   read: boolean;
   type: 'inquiry' | 'rfp' | 'system';
 }
+
+export interface ChatMessage {
+  id: string;
+  sender: 'visitor' | 'admin' | 'system';
+  senderName: string;
+  text: string;
+  timestamp: string;
+}
+
+export interface ChatSession {
+  id: string;
+  visitorName: string;
+  visitorPhone?: string;
+  visitorEmail?: string;
+  visitorCompany?: string;
+  serviceInterest?: string;
+  createdAt: string;
+  lastActive: string;
+  status: 'active' | 'resolved' | 'waiting';
+  unreadCountAdmin: number;
+  unreadCountVisitor: number;
+  messages: ChatMessage[];
+}

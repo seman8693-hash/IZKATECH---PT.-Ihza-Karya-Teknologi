@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Logo } from './Logo.tsx';
 import { 
   getStoredInquiries, 
+  updateInquiry,
   updateInquiryStatus, 
   deleteInquiry,
   getStoredProjects,
   saveProject,
+  updateProject,
   deleteProject,
   setAdminAuth,
   checkAdminAuth
@@ -39,7 +41,9 @@ import {
   FileText,
   KeyRound,
   ArrowUpRight,
-  Eye
+  Eye,
+  Pencil,
+  Edit3
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -61,8 +65,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedInquiry, setSelectedInquiry] = useState<AdminInquiry | null>(null);
 
-  // New Project Form State
+  // New / Edit Project Form State
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState<boolean>(false);
+  const [editingProject, setEditingProject] = useState<AdminProject | null>(null);
   const [newProject, setNewProject] = useState<Omit<AdminProject, 'id'>>({
     title: '',
     clientName: '',
@@ -72,6 +77,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     valueApprox: 'Rp 150.000.000',
     description: ''
   });
+
+  // Edit Inquiry Modal State
+  const [editingInquiry, setEditingInquiry] = useState<AdminInquiry | null>(null);
 
   useEffect(() => {
     const isAuthed = checkAdminAuth();
@@ -123,15 +131,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     }
   };
 
-  const handleCreateProject = (e: React.FormEvent) => {
+  const handleOpenEditInquiry = (inquiry: AdminInquiry) => {
+    setEditingInquiry({ ...inquiry });
+  };
+
+  const handleSaveEditedInquiry = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newProject.title || !newProject.clientName) {
-      alert('Mohon lengkapi judul proyek dan nama instansi klien.');
-      return;
+    if (!editingInquiry) return;
+    const updated = updateInquiry(editingInquiry);
+    setInquiries(updated);
+    if (selectedInquiry?.id === editingInquiry.id) {
+      setSelectedInquiry(editingInquiry);
     }
-    saveProject(newProject);
-    setProjects(getStoredProjects());
-    setIsAddProjectModalOpen(false);
+    setEditingInquiry(null);
+  };
+
+  const handleOpenCreateProject = () => {
+    setEditingProject(null);
     setNewProject({
       title: '',
       clientName: '',
@@ -141,6 +157,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
       valueApprox: 'Rp 200.000.000',
       description: ''
     });
+    setIsAddProjectModalOpen(true);
+  };
+
+  const handleOpenEditProject = (proj: AdminProject) => {
+    setEditingProject(proj);
+    setNewProject({
+      title: proj.title,
+      clientName: proj.clientName,
+      category: proj.category,
+      year: proj.year,
+      status: proj.status,
+      valueApprox: proj.valueApprox || '',
+      description: proj.description
+    });
+    setIsAddProjectModalOpen(true);
+  };
+
+  const handleSaveProjectForm = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProject.title || !newProject.clientName) {
+      alert('Mohon lengkapi judul proyek dan nama instansi klien.');
+      return;
+    }
+    if (editingProject) {
+      const updatedList = updateProject({
+        ...editingProject,
+        ...newProject
+      });
+      setProjects(updatedList);
+    } else {
+      saveProject(newProject);
+      setProjects(getStoredProjects());
+    }
+    setIsAddProjectModalOpen(false);
+    setEditingProject(null);
   };
 
   const handleDeleteProject = (id: string) => {
@@ -248,12 +299,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 )}
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-3.5 px-4 rounded-xl font-bold text-slate-950 bg-gradient-to-r from-cyan-400 via-cyan-300 to-blue-400 hover:from-cyan-300 hover:to-blue-300 shadow-lg shadow-cyan-500/25 transition-all transform active:scale-[0.98] cursor-pointer text-sm"
-              >
-                Buka Dashboard Admin
-              </button>
+              <div className="flex flex-col gap-2.5">
+                <button
+                  type="submit"
+                  className="w-full py-3.5 px-4 rounded-xl font-bold text-slate-950 bg-gradient-to-r from-cyan-400 via-cyan-300 to-blue-400 hover:from-cyan-300 hover:to-blue-300 shadow-lg shadow-cyan-500/25 transition-all transform active:scale-[0.98] cursor-pointer text-sm"
+                >
+                  Buka Dashboard Admin
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPinInput('2026');
+                    setIsAuthenticated(true);
+                    setAdminAuth(true);
+                    setLoginError('');
+                    loadData();
+                  }}
+                  className="w-full py-2.5 px-3 rounded-lg border border-cyan-500/40 bg-cyan-950/40 hover:bg-cyan-900/50 text-cyan-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <KeyRound className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Akses Cepat 1-Klik (Gunakan PIN: 2026)</span>
+                </button>
+              </div>
             </form>
 
             <div className="mt-8 pt-6 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
@@ -420,7 +488,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
 
           {currentTab === 'projects' && (
             <button
-              onClick={() => setIsAddProjectModalOpen(true)}
+              onClick={handleOpenCreateProject}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 hover:bg-cyan-400 text-xs font-bold transition-all shadow-md cursor-pointer"
             >
               <Plus className="w-4 h-4" />
@@ -531,7 +599,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                               </span>
                             </td>
                             <td className="p-3.5 text-right" onClick={(e) => e.stopPropagation()}>
-                              <div className="flex items-center justify-end gap-2">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => handleOpenEditInquiry(item)}
+                                  className="p-1.5 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 transition-colors cursor-pointer"
+                                  title="Edit Data Klien / Prospek"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </button>
                                 <a
                                   href={`https://wa.me/${item.phone.replace(/[^0-9]/g, '')}?text=Halo%20${encodeURIComponent(item.clientName)},%20kami%20dari%20PT.%20Ihza%20Karya%20Teknologi%20menindaklanjuti%20permintaan%20penawaran%20Anda.`}
                                   target="_blank"
@@ -543,7 +618,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                                 </a>
                                 <button
                                   onClick={() => handleDeleteInquiry(item.id)}
-                                  className="p-1.5 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors"
+                                  className="p-1.5 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
                                   title="Hapus"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -637,6 +712,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                         {selectedInquiry.notes || 'Tidak ada catatan tambahan.'}
                       </div>
                     </div>
+
+                    {/* Action Buttons in Detail Drawer */}
+                    <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                      <button
+                        onClick={() => handleDeleteInquiry(selectedInquiry.id)}
+                        className="py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                        title="Hapus Prospek"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Hapus</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleOpenEditInquiry(selectedInquiry)}
+                        className="py-2 px-4 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                        <span>Edit Data Klien</span>
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="bg-slate-900/50 border border-slate-800/80 border-dashed rounded-2xl p-8 text-center text-slate-500 text-xs">
@@ -683,13 +778,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
 
                   <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
                     <span>Tahun: {proj.year}</span>
-                    <button
-                      onClick={() => handleDeleteProject(proj.id)}
-                      className="text-rose-400 hover:text-rose-300 p-1 transition-colors"
-                      title="Hapus Proyek"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleOpenEditProject(proj)}
+                        className="text-cyan-400 hover:text-cyan-300 p-1.5 rounded hover:bg-cyan-500/10 transition-colors cursor-pointer"
+                        title="Edit Proyek"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProject(proj.id)}
+                        className="text-rose-400 hover:text-rose-300 p-1.5 rounded hover:bg-rose-500/10 transition-colors cursor-pointer"
+                        title="Hapus Proyek"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -749,24 +853,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
       </div>
 
       {/* -------------------------------------------------------------
-          ADD PROJECT MODAL
+          ADD / EDIT PROJECT MODAL
           ------------------------------------------------------------- */}
       {isAddProjectModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-white font-display">
-                Tambah Proyek Portofolio Baru
+                {editingProject ? `Edit Proyek (${editingProject.id})` : 'Tambah Proyek Portofolio Baru'}
               </h3>
               <button
-                onClick={() => setIsAddProjectModalOpen(false)}
-                className="text-slate-400 hover:text-white text-xs font-mono"
+                onClick={() => {
+                  setIsAddProjectModalOpen(false);
+                  setEditingProject(null);
+                }}
+                className="text-slate-400 hover:text-white text-xs font-mono cursor-pointer"
               >
                 TUTUP
               </button>
             </div>
 
-            <form onSubmit={handleCreateProject} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveProjectForm} className="space-y-4 text-xs">
               <div>
                 <label className="block text-slate-300 mb-1 font-semibold">Judul Proyek</label>
                 <input
@@ -815,6 +922,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
               </div>
 
               <div>
+                <label className="block text-slate-300 mb-1 font-semibold">Estimasi Nilai Kontrak (Opsional)</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Rp 350.000.000"
+                  value={newProject.valueApprox || ''}
+                  onChange={(e) => setNewProject({ ...newProject, valueApprox: e.target.value })}
+                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              <div>
                 <label className="block text-slate-300 mb-1 font-semibold">Deskripsi Pengerjaan</label>
                 <textarea
                   rows={3}
@@ -828,17 +946,175 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
               <div className="pt-3 flex items-center justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsAddProjectModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
+                  onClick={() => {
+                    setIsAddProjectModalOpen(false);
+                    setEditingProject(null);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold hover:bg-cyan-400 shadow-md"
+                  className="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold hover:bg-cyan-400 shadow-md cursor-pointer"
                 >
-                  Simpan Proyek
+                  {editingProject ? 'Simpan Perubahan' : 'Simpan Proyek'}
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* -------------------------------------------------------------
+          EDIT INQUIRY / LEAD MODAL
+          ------------------------------------------------------------- */}
+      {editingInquiry && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <span className="text-[10px] font-mono text-cyan-400 uppercase">EDIT PROSPEK KLIEN</span>
+                <h3 className="text-base font-bold text-white font-display">
+                  {editingInquiry.id} - {editingInquiry.clientName}
+                </h3>
+              </div>
+              <button
+                onClick={() => setEditingInquiry(null)}
+                className="text-slate-400 hover:text-white text-xs font-mono cursor-pointer"
+              >
+                TUTUP
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditedInquiry} className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-300 mb-1 font-semibold">Nama Klien / PIC</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingInquiry.clientName}
+                    onChange={(e) => setEditingInquiry({ ...editingInquiry, clientName: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 mb-1 font-semibold">Instansi / Perusahaan</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingInquiry.companyName}
+                    onChange={(e) => setEditingInquiry({ ...editingInquiry, companyName: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-300 mb-1 font-semibold">No WhatsApp / Telepon</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingInquiry.phone}
+                    onChange={(e) => setEditingInquiry({ ...editingInquiry, phone: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 mb-1 font-semibold">Email Klien</label>
+                  <input
+                    type="email"
+                    required
+                    value={editingInquiry.email}
+                    onChange={(e) => setEditingInquiry({ ...editingInquiry, email: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-300 mb-1 font-semibold">Status Tahapan</label>
+                  <select
+                    value={editingInquiry.status}
+                    onChange={(e) => setEditingInquiry({ ...editingInquiry, status: e.target.value as any })}
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400"
+                  >
+                    <option value="new">NEW (Baru Masuk)</option>
+                    <option value="contacted">CONTACTED (Dihubungi)</option>
+                    <option value="survey">SURVEY (Jadwal Survei / BoQ)</option>
+                    <option value="deal">DEAL (Disetujui / SPK)</option>
+                    <option value="archived">ARCHIVED (Diarsipkan)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-300 mb-1 font-semibold">Prioritas</label>
+                  <select
+                    value={editingInquiry.priority}
+                    onChange={(e) => setEditingInquiry({ ...editingInquiry, priority: e.target.value as any })}
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400"
+                  >
+                    <option value="high">Tinggi (High Priority)</option>
+                    <option value="medium">Sedang (Medium)</option>
+                    <option value="normal">Normal</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1 font-semibold">Skala Proyek &amp; Estimasi</label>
+                <input
+                  type="text"
+                  value={editingInquiry.scale || ''}
+                  onChange={(e) => setEditingInquiry({ ...editingInquiry, scale: e.target.value })}
+                  placeholder="Contoh: Gedung 4 Lantai / 50 Titik"
+                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1 font-semibold">Catatan Klien &amp; Kebutuhan Teknis</label>
+                <textarea
+                  rows={3}
+                  value={editingInquiry.notes}
+                  onChange={(e) => setEditingInquiry({ ...editingInquiry, notes: e.target.value })}
+                  placeholder="Rincian permintaan khusus, jadwal pertemuan, atau survei lokasi..."
+                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              <div className="pt-3 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm(`Hapus prospek ${editingInquiry.clientName}?`)) {
+                      handleDeleteInquiry(editingInquiry.id);
+                      setEditingInquiry(null);
+                    }
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 flex items-center gap-1.5 cursor-pointer font-semibold"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Hapus Data</span>
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingInquiry(null)}
+                    className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold hover:bg-cyan-400 shadow-md cursor-pointer"
+                  >
+                    Simpan Perubahan
+                  </button>
+                </div>
               </div>
             </form>
           </div>
