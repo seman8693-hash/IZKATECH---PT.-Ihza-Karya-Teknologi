@@ -3,6 +3,7 @@ import React from 'react';
 interface LogoProps {
   className?: string;
   showSubtitle?: boolean;
+  showText?: boolean;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   variant?: 'cyan-gold' | 'white-cyan';
 }
@@ -10,6 +11,7 @@ interface LogoProps {
 export const Logo: React.FC<LogoProps> = ({ 
   className = '', 
   showSubtitle = true,
+  showText = true,
   size = 'md',
   variant = 'cyan-gold'
 }) => {
@@ -74,20 +76,22 @@ export const Logo: React.FC<LogoProps> = ({
         </svg>
       </div>
 
-      <div className="flex flex-col text-left">
-        <span className={`font-display font-extrabold tracking-tight leading-none ${titleSizes[size]} ${
-          variant === 'cyan-gold' ? 'text-cyan-400' : 'text-white'
-        }`}>
-          IZKATECH
-        </span>
-        {showSubtitle && (
-          <span className={`font-semibold uppercase mt-1 leading-tight ${subtitleSizes[size]} ${
-            variant === 'cyan-gold' ? 'text-amber-400' : 'text-cyan-400'
+      {showText && (
+        <div className="flex flex-col text-left">
+          <span className={`font-display font-extrabold tracking-tight leading-none ${titleSizes[size]} ${
+            variant === 'cyan-gold' ? 'text-cyan-400' : 'text-white'
           }`}>
-            ICT SYSTEM INTEGRATOR &amp; ME
+            IZKATECH
           </span>
-        )}
-      </div>
+          {showSubtitle && (
+            <span className={`font-semibold uppercase mt-1 leading-tight ${subtitleSizes[size]} ${
+              variant === 'cyan-gold' ? 'text-amber-400' : 'text-cyan-400'
+            }`}>
+              ICT SYSTEM INTEGRATOR &amp; ME
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -59,8 +59,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       {/* Brand Block — logo IZKATECH di kartu terang (sesuai identitas resmi) */}
       <div className="p-4 border-b border-slate-100">
         <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-cyan-50/60 to-white p-3.5 shadow-sm flex items-center gap-3">
-          <Logo size="md" showSubtitle={false} className="!gap-0" />
-          <div className="leading-tight min-w-0">
+          <Logo size="md" showText={false} className="shrink-0" />
+          <div className="leading-tight min-w-0 flex-1">
             <div className="text-lg font-extrabold tracking-tight text-teal-800 font-display">
               IZKATECH
             </div>

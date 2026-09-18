@@ -10,6 +10,7 @@ interface StatsCardProps {
   accent?: AccentColor;
   sub?: string;
   onClick?: () => void;
+  className?: string;
 }
 
 const ACCENTS: Record<AccentColor, { chip: string; value: string; sub: string }> = {
@@ -29,13 +30,14 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   accent = 'cyan',
   sub,
   onClick,
+  className = '',
 }) => {
   const a = ACCENTS[accent];
   const Wrapper = onClick ? 'button' : 'div';
   return (
     <Wrapper
       onClick={onClick}
-      className={`w-full text-left bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden transition-all ${
+      className={`w-full text-left bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden transition-all h-full min-h-[132px] flex flex-col ${className} ${
         onClick ? 'hover:border-cyan-300 hover:shadow-md cursor-pointer' : ''
       }`}
     >
@@ -46,7 +48,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
         </span>
       </div>
       <div className={`mt-2 text-2xl sm:text-3xl font-bold font-display ${a.value}`}>{value}</div>
-      {sub && <div className={`text-[10px] sm:text-[11px] mt-1 ${a.sub}`}>{sub}</div>}
+      {sub && <div className={`text-[10px] sm:text-[11px] mt-auto pt-1.5 leading-snug ${a.sub}`}>{sub}</div>}
     </Wrapper>
   );
 };

@@ -21,6 +21,7 @@ import { AdminInquiry, AdminProject, ChatSession } from '../types/admin.ts';
 import { COMPANY_INFO, SERVICES, BRAND_PARTNERS } from '../data/companyData.ts';
 import { ChatCRMTab } from './ChatCRMTab.tsx';
 import { DocumentGeneratorModal } from './DocumentGeneratorModal.tsx';
+import { AddInquiryModal } from './dashboard/AddInquiryModal.tsx';
 import { AdminSidebar, AdminTab } from './dashboard/AdminSidebar.tsx';
 import { StatsCard } from './dashboard/StatsCard.tsx';
 import { ProjectFormModal } from './dashboard/ProjectFormModal.tsx';
@@ -87,6 +88,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   // New / Edit Project Form State
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState<boolean>(false);
   const [editingProject, setEditingProject] = useState<AdminProject | null>(null);
+
+  // Tambah Prospek Manual (modal input baru via AddInquiryModal)
+  const [isAddInquiryModalOpen, setIsAddInquiryModalOpen] = useState<boolean>(false);
 
   // Edit Inquiry Modal State
   const [editingInquiry, setEditingInquiry] = useState<AdminInquiry | null>(null);
@@ -496,12 +500,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-2 min-w-0">
-              <Logo size="sm" variant="cyan-gold" />
-              <span className="hidden sm:inline text-xs font-mono font-bold px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-700 border border-cyan-500/30">
-                ADMIN CONSOLE
-              </span>
-            </div>
+            {/* Brand mini di header konten — ikon saja (nama sudah di sidebar), hemat baris */}
+            <Logo size="sm" variant="cyan-gold" showText={false} className="shrink-0" />
             <button
               onClick={handleLogout}
               className="p-2 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 cursor-pointer transition-colors"
@@ -545,18 +545,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
               </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            {/* Stats Grid — baris rapi 3 + 2 di desktop, tinggi kartu seragam */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 items-stretch">
               <StatsCard label="Total Prospek Masuk" value={totalInquiries} icon={Inbox} accent="cyan" sub="Formulir Web & RFP" />
               <StatsCard label="Prospek Baru" value={newInquiries} icon={Clock} accent="amber" sub="Perlu follow-up sales" onClick={() => setCurrentTab('inquiries')} />
               <StatsCard label="Survei / Negosiasi" value={inProgressInquiries} icon={Briefcase} accent="blue" sub="Penyusunan BoQ & RAB" onClick={() => setCurrentTab('inquiries')} />
               <StatsCard label="Deal / SPK" value={dealInquiries} icon={CheckCircle} accent="emerald" sub="Terkonfirmasi masuk" onClick={() => setCurrentTab('inquiries')} />
-              <StatsCard label="Live Chat Aktif" value={activeChats} icon={Headphones} accent="rose" sub={`${unreadAdminMessages} belum dibalas`} onClick={() => setCurrentTab('chat')} />
+              <StatsCard label="Live Chat Aktif" value={activeChats} icon={Headphones} accent="rose" sub={`${unreadAdminMessages} belum dibalas`} onClick={() => setCurrentTab('chat')} className="sm:col-span-2 md:col-span-1" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            {/* Overview bawah — kolom kiri/kana sejajar rapi */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
               {/* Recent Inquiries */}
-              <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+              <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-[320px]">
                 <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                   <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                     <Inbox className="w-4 h-4 text-cyan-600" />
@@ -569,7 +570,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                     Lihat Semua →
                   </button>
                 </div>
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100 flex-1">
                   {inquiries.slice(0, 5).map((item) => (
                     <button
                       key={item.id}
@@ -577,18 +578,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                         setSelectedInquiry(item);
                         setCurrentTab('inquiries');
                       }}
-                      className="w-full text-left p-4 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-3"
+                      className="w-full text-left px-4 py-3.5 hover:bg-slate-50 transition-colors cursor-pointer grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-3"
                     >
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                      <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
                         {item.clientName.charAt(0)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-bold text-slate-900 truncate">{item.clientName}</div>
-                        <div className="text-[11px] text-slate-500 truncate">{item.companyName} • {item.serviceInterest[0]}</div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <div className="text-[10px] font-mono text-slate-400">{item.timestamp}</div>
-                        <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase ${
+                      </span>
+                      <span className="min-w-0 block">
+                        <span className="block text-xs font-bold text-slate-900 truncate leading-snug">{item.clientName}</span>
+                        <span className="block text-[11px] text-slate-500 truncate mt-0.5">{item.companyName} • {item.serviceInterest[0]}</span>
+                      </span>
+                      <span className="text-right shrink-0 flex flex-col items-end justify-center gap-1">
+                        <span className="text-[10px] font-mono text-slate-400 leading-none">{item.timestamp}</span>
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase leading-none ${
                           item.status === 'new'
                             ? 'bg-amber-100 text-amber-700'
                             : item.status === 'deal'
@@ -597,7 +598,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                         }`}>
                           {item.status}
                         </span>
-                      </div>
+                      </span>
                     </button>
                   ))}
                   {inquiries.length === 0 && (
@@ -609,59 +610,61 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
               </div>
 
               {/* Quick Actions */}
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 space-y-3">
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 flex flex-col min-h-[320px]">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 pb-1">
                   <BarChart3 className="w-4 h-4 text-cyan-600" />
                   Tindakan Cepat
                 </h3>
+                <div className="space-y-3 mt-2">
                 <button
                   onClick={() => setCurrentTab('inquiries')}
-                  className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50 transition-all cursor-pointer text-left"
+                  className="w-full grid grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50 transition-all cursor-pointer text-left"
                 >
                   <span className="w-9 h-9 rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center shrink-0">
                     <FileText className="w-4 h-4" />
                   </span>
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">Buat SPH / PKS</div>
-                    <div className="text-[10px] text-slate-500">Pilih prospek lalu generate dokumen</div>
-                  </div>
+                  <span className="min-w-0 block">
+                    <span className="block text-xs font-bold text-slate-900 leading-snug truncate">Buat SPH / PKS</span>
+                    <span className="block text-[10px] text-slate-500 leading-snug truncate">Pilih prospek lalu generate dokumen</span>
+                  </span>
                 </button>
                 <button
                   onClick={() => setCurrentTab('chat')}
-                  className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50 transition-all cursor-pointer text-left"
+                  className="w-full grid grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50 transition-all cursor-pointer text-left"
                 >
                   <span className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
                     <Headphones className="w-4 h-4" />
                   </span>
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">Balas Live Chat</div>
-                    <div className="text-[10px] text-slate-500">{unreadAdminMessages} pesan menunggu balasan</div>
-                  </div>
+                  <span className="min-w-0 block">
+                    <span className="block text-xs font-bold text-slate-900 leading-snug truncate">Balas Live Chat</span>
+                    <span className="block text-[10px] text-slate-500 leading-snug truncate">{unreadAdminMessages} pesan menunggu balasan</span>
+                  </span>
                 </button>
                 <button
                   onClick={exportInquiriesToCSV}
-                  className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50 transition-all cursor-pointer text-left"
+                  className="w-full grid grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50 transition-all cursor-pointer text-left"
                 >
                   <span className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
                     <FileSpreadsheet className="w-4 h-4" />
                   </span>
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">Export Data (CSV)</div>
-                    <div className="text-[10px] text-slate-500">Unduh seluruh data prospek</div>
-                  </div>
+                  <span className="min-w-0 block">
+                    <span className="block text-xs font-bold text-slate-900 leading-snug truncate">Export Data (CSV)</span>
+                    <span className="block text-[10px] text-slate-500 leading-snug truncate">Unduh seluruh data prospek</span>
+                  </span>
                 </button>
                 <button
                   onClick={() => setCurrentTab('projects')}
-                  className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50 transition-all cursor-pointer text-left"
+                  className="w-full grid grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50 transition-all cursor-pointer text-left"
                 >
                   <span className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
                     <Briefcase className="w-4 h-4" />
                   </span>
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">Kelola Proyek</div>
-                    <div className="text-[10px] text-slate-500">{projects.length} proyek portofolio</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-slate-900 leading-snug">Kelola Proyek</div>
+                    <div className="text-[10px] text-slate-500 leading-snug">{projects.length} proyek portofolio</div>
                   </div>
                 </button>
+                </div>
               </div>
             </div>
           </div>
@@ -691,12 +694,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             ------------------------------------------------------------- */}
         {currentTab === 'inquiries' && (
           <div className="space-y-5">
-            {/* Ringkasan status prospek */}
+            {/* Ringkasan status prospek + tombol tambah (satu baris rapi) */}
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-semibold text-slate-500">Total {inquiries.length} prospek</span>
               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">New {newInquiries}</span>
               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">Follow-up {inProgressInquiries}</span>
               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Deal {dealInquiries}</span>
+              <button
+                onClick={() => setIsAddInquiryModalOpen(true)}
+                className="ml-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold transition-colors cursor-pointer shadow-sm shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Prospek</span>
+              </button>
             </div>
 
             <div className="space-y-3">
@@ -1139,6 +1149,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
           onClose={() => setDocGenInquiry(null)}
         />
       )}
+
+      {/* -------------------------------------------------------------
+          TAMBAH PROSPEK MODAL (input manual dari admin)
+          ------------------------------------------------------------- */}
+      <AddInquiryModal
+        isOpen={isAddInquiryModalOpen}
+        onClose={() => setIsAddInquiryModalOpen(false)}
+        onInquiryAdded={() => setInquiries(getStoredInquiries())}
+      />
 
       {/* Admin Dashboard Footer */}
       <footer className="border-t border-slate-200 py-4 text-center text-[11px] text-slate-500 font-mono">
