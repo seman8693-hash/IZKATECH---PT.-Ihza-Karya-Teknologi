@@ -326,14 +326,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             <div className="h-1.5 w-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-600" />
 
             {/* Login Form — label persis mockup: "email", "Kata Sandi" */}
-            <form onSubmit={handleLogin} className="px-6 sm:px-7 pt-5 pb-6 space-y-4">
+            <form onSubmit={handleLogin} className="px-6 sm:px-7 pt-5 pb-6 space-y-4 text-slate-200">
               {/* Email */}
               <div>
-                <label htmlFor="admin-email" className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label htmlFor="admin-email" className="block text-xs font-medium text-slate-300 mb-1.5">
                   email
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
                   <input
                     id="admin-email"
                     type="email"
@@ -343,18 +343,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                     onChange={(e) => setEmailInput(e.target.value)}
                     placeholder="nama@izkatech.co.id"
                     autoComplete="username"
-                    className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-colors"
+                    className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-slate-900 border border-slate-700 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-900/50 transition-colors"
                   />
                 </div>
               </div>
 
               {/* Kata Sandi */}
               <div>
-                <label htmlFor="admin-password" className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label htmlFor="admin-password" className="block text-xs font-medium text-slate-300 mb-1.5">
                   Kata Sandi
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                  <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
                   <input
                     id="admin-password"
                     type={showPassword ? 'text' : 'password'}
@@ -363,12 +363,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                     onChange={(e) => setPasswordInput(e.target.value)}
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className="w-full pl-10 pr-11 py-3 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-colors"
+                    className="w-full pl-10 pr-11 py-3 rounded-xl bg-slate-900 border border-slate-700 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-900/50 transition-colors"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-2.5 top-2 p-1.5 rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                    className="absolute right-2.5 top-2 p-1.5 rounded-lg text-slate-500 hover:text-cyan-300 hover:bg-slate-800 transition-colors cursor-pointer"
                     aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
                     title={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
                   >
@@ -376,7 +376,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   </button>
                 </div>
                 {loginError && (
-                  <p className="text-xs text-rose-600 flex items-start gap-1.5 mt-2">
+                  <p className="text-xs text-rose-400 flex items-start gap-1.5 mt-2">
                     <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                     <span>{loginError}</span>
                   </p>
@@ -385,19 +385,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
 
               {/* Ingat sesi & lupa sandi */}
               <div className="flex items-center justify-between pt-0.5">
-                <label className="inline-flex items-center gap-2 text-xs text-slate-500 cursor-pointer select-none">
+                <label className="inline-flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={rememberSession}
                     onChange={(e) => setRememberSession(e.target.checked)}
-                    className="w-3.5 h-3.5 rounded border-slate-300 accent-cyan-500 cursor-pointer"
+                    className="w-3.5 h-3.5 rounded border-slate-600 accent-cyan-500 cursor-pointer"
                   />
                   <span>Ingat sesi saya</span>
                 </label>
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  className="text-xs font-medium text-cyan-700 hover:text-cyan-800 hover:underline cursor-pointer"
+                  className="text-xs font-medium text-cyan-300 hover:text-cyan-200 hover:underline cursor-pointer"
                 >
                   Lupa sandi?
                 </button>
@@ -411,9 +411,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 <ArrowRight className="w-4 h-4" />
               </button>
 
-              <div className="border-t border-slate-100" />
+              <div className="border-t border-slate-700" />
               <div className="text-center -mt-1">
-                <span className="text-[10px] font-mono text-slate-400">
+                <span className="text-[10px] font-mono text-slate-500">
                   Akun demo: admin@izkatech.co.id · izkatech2026
                 </span>
               </div>

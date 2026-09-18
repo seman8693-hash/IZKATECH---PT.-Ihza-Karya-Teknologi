@@ -6,12 +6,13 @@ import {
   Briefcase,
   Layers,
   Headphones,
+  Settings,
   LogOut,
   ExternalLink,
   X,
 } from 'lucide-react';
 
-export type AdminTab = 'overview' | 'inquiries' | 'projects' | 'services' | 'chat';
+export type AdminTab = 'overview' | 'inquiries' | 'projects' | 'services' | 'chat' | 'settings';
 
 interface SidebarCounts {
   inquiries: number;
@@ -37,6 +38,7 @@ const NAV_ITEMS: { tab: AdminTab; label: string; icon: React.FC<{ className?: st
   { tab: 'projects', label: 'Proyek Portofolio', icon: Briefcase },
   { tab: 'services', label: 'Layanan & Brand', icon: Layers },
   { tab: 'chat', label: 'Live Chat CRM', icon: Headphones },
+  { tab: 'settings', label: 'Pengaturan Logo', icon: Settings },
 ];
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({

@@ -514,6 +514,37 @@ export const setAdminAuth = (authenticated: boolean, rememberSession = true) => 
 };
 
 // -------------------------------------------------------------
+// CUSTOM LOGO STORE (Upload logo manual dari dashboard admin)
+// -------------------------------------------------------------
+const CUSTOM_LOGO_KEY = 'izkatech_custom_logo_url';
+
+export const getCustomLogo = (): string | null => {
+  try {
+    return localStorage.getItem(CUSTOM_LOGO_KEY);
+  } catch {
+    return null;
+  }
+};
+
+export const setCustomLogo = (dataUrl: string) => {
+  try {
+    localStorage.setItem(CUSTOM_LOGO_KEY, dataUrl);
+    window.dispatchEvent(new Event('izkatech_logo_updated'));
+  } catch (e) {
+    console.error('Gagal menyimpan logo:', e);
+  }
+};
+
+export const removeCustomLogo = () => {
+  try {
+    localStorage.removeItem(CUSTOM_LOGO_KEY);
+    window.dispatchEvent(new Event('izkatech_logo_updated'));
+  } catch (e) {
+    console.error('Gagal menghapus logo:', e);
+  }
+};
+
+// -------------------------------------------------------------
 // LIVE CHAT & CRM SYSTEM STORE
 // -------------------------------------------------------------
 const INITIAL_CHAT_SESSIONS: ChatSession[] = [

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getCustomLogo } from '../data/adminStore';
 
 interface LogoProps {
   className?: string;
@@ -15,6 +16,17 @@ export const Logo: React.FC<LogoProps> = ({
   size = 'md',
   variant = 'cyan-gold'
 }) => {
+  const [customLogo, setCustomLogoState] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCustomLogoState(getCustomLogo());
+    const handleUpdate = () => {
+      setCustomLogoState(getCustomLogo());
+    };
+    window.addEventListener('izkatech_logo_updated', handleUpdate);
+    return () => window.removeEventListener('izkatech_logo_updated', handleUpdate);
+  }, []);
+
   const iconSizes = {
     sm: 'w-8 h-8',
     md: 'w-11 h-11',
@@ -38,9 +50,12 @@ export const Logo: React.FC<LogoProps> = ({
 
   return (
     <div className={`flex items-center gap-3.5 ${className}`}>
-      {/* Precision 3D Sphere & Wave Logo matching official brand identity exactly */}
+      {/* Precision 3D Sphere & Wave Logo / Custom Uploaded Logo */}
       <div className={`relative ${iconSizes[size]} flex-shrink-0 flex items-center justify-center overflow-hidden rounded-full shadow-[0_0_20px_rgba(6,182,212,0.35)] bg-slate-950/90 border border-cyan-500/30`}>
-        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full transform scale-110">
+        {customLogo ? (
+          <img src={customLogo} alt="IZKATECH Logo" className="w-full h-full object-cover" />
+        ) : (
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full transform scale-110">
           {/* Glass sphere radial lighting base */}
           <circle cx="50" cy="50" r="48" fill="url(#sphereBase)" />
           <radialGradient id="sphereBase" cx="35%" cy="35%" r="65%">
@@ -91,6 +106,7 @@ export const Logo: React.FC<LogoProps> = ({
             </linearGradient>
           </defs>
         </svg>
+        )}
       </div>
 
       {showText && (
