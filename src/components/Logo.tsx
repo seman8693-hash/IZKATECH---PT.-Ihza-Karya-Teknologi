@@ -38,39 +38,56 @@ export const Logo: React.FC<LogoProps> = ({
 
   return (
     <div className={`flex items-center gap-3.5 ${className}`}>
-      {/* Precision SVG Logo reproduction of the IZKATECH sphere and orbit waves */}
-      <div className={`relative ${iconSizes[size]} flex-shrink-0 flex items-center justify-center`}>
-        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-[0_0_16px_rgba(6,182,212,0.45)]">
-          {/* Background subtle dark glow ring */}
-          <circle cx="50" cy="50" r="44" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.35" />
-          
-          {/* Wireframe longitude & latitude ellipses matching brand PDF */}
-          <ellipse cx="50" cy="50" rx="40" ry="22" stroke="#f59e0b" strokeWidth="2" strokeDasharray="5 2.5" transform="rotate(-25 50 50)" opacity="0.95" />
-          <ellipse cx="50" cy="50" rx="38" ry="18" stroke="#38bdf8" strokeWidth="2" transform="rotate(35 50 50)" opacity="0.9" />
-          <circle cx="50" cy="50" r="30" stroke="#0284c7" strokeWidth="1.5" opacity="0.6" />
-          
-          {/* Inner mesh tech lines */}
-          <path d="M20 50 Q50 25 80 50" stroke="#fbbf24" strokeWidth="2.2" fill="none" opacity="0.95" />
-          <path d="M20 50 Q50 75 80 50" stroke="#06b6d4" strokeWidth="2" fill="none" opacity="0.85" />
-          
-          {/* Smooth dynamic dual wave in cyan and blue - cupping the globe */}
-          <path d="M22 68 C35 60, 50 82, 78 68 C68 84, 38 84, 22 68 Z" fill="url(#waveGradBlue)" />
-          <path d="M24 74 C40 68, 54 84, 76 72 C64 88, 36 88, 24 74 Z" fill="url(#waveGradCyan)" opacity="0.9" />
+      {/* Precision 3D Sphere & Wave Logo matching official brand identity exactly */}
+      <div className={`relative ${iconSizes[size]} flex-shrink-0 flex items-center justify-center overflow-hidden rounded-full shadow-[0_0_20px_rgba(6,182,212,0.35)] bg-slate-950/90 border border-cyan-500/30`}>
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full transform scale-110">
+          {/* Glass sphere radial lighting base */}
+          <circle cx="50" cy="50" r="48" fill="url(#sphereBase)" />
+          <radialGradient id="sphereBase" cx="35%" cy="35%" r="65%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+            <stop offset="35%" stopColor="#e0f2fe" stopOpacity="0.75" />
+            <stop offset="70%" stopColor="#7dd3fc" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#0369a1" stopOpacity="0.85" />
+          </radialGradient>
 
-          {/* Glowing node vertices */}
-          <circle cx="34" cy="36" r="2.5" fill="#fbbf24" />
-          <circle cx="68" cy="40" r="2.5" fill="#38bdf8" />
-          <circle cx="50" cy="50" r="3" fill="#ffffff" />
-          <circle cx="62" cy="62" r="2.5" fill="#06b6d4" />
+          {/* 3D Curved Globe Meridian & Parallel Grids (Yellow-Green top, Cyan right) */}
+          <ellipse cx="50" cy="50" rx="42" ry="24" stroke="url(#gridYellowGrad)" strokeWidth="2.8" transform="rotate(-30 50 50)" />
+          <ellipse cx="50" cy="50" rx="40" ry="20" stroke="url(#gridCyanGrad)" strokeWidth="2.5" transform="rotate(40 50 50)" />
+          <circle cx="50" cy="50" r="34" stroke="#0284c7" strokeWidth="1.8" opacity="0.65" />
+          
+          {/* Upper arch latitude curves */}
+          <path d="M15 50 C25 22, 75 22, 85 50" stroke="#bef264" strokeWidth="2.5" fill="none" />
+          <path d="M22 38 C35 15, 65 15, 78 38" stroke="#facc15" strokeWidth="2.2" fill="none" />
 
+          {/* Bottom Glossy 3D Blue Wave / Leaf Cupping Shape */}
+          <path d="M14 74 C30 55, 52 88, 86 64 C74 86, 38 90, 14 74 Z" fill="url(#waveDeepBlue)" />
+          <path d="M18 78 C34 62, 54 90, 82 70 C70 88, 42 90, 18 78 Z" fill="url(#waveBrightCyan)" />
+          {/* Wave highlight overlay */}
+          <path d="M26 72 C40 60, 58 78, 74 68" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" fill="none" opacity="0.85" />
+
+          {/* Node intersection glints */}
+          <circle cx="36" cy="32" r="3" fill="#facc15" />
+          <circle cx="68" cy="35" r="2.8" fill="#38bdf8" />
+          <circle cx="78" cy="52" r="2.5" fill="#22d3ee" />
+          <circle cx="50" cy="50" r="3.5" fill="#ffffff" />
+
+          {/* Gradients */}
           <defs>
-            <linearGradient id="waveGradBlue" x1="20" y1="65" x2="80" y2="80" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#0284c7" />
-              <stop offset="1" stopColor="#0369a1" />
+            <linearGradient id="gridYellowGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#facc15" />
+              <stop offset="100%" stopColor="#84cc16" />
             </linearGradient>
-            <linearGradient id="waveGradCyan" x1="20" y1="70" x2="80" y2="85" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#38bdf8" />
-              <stop offset="1" stopColor="#06b6d4" />
+            <linearGradient id="gridCyanGrad" x1="0" y1="1" x2="1" y2="0">
+              <stop offset="0%" stopColor="#06b6d4" />
+              <stop offset="100%" stopColor="#22d3ee" />
+            </linearGradient>
+            <linearGradient id="waveDeepBlue" x1="15" y1="70" x2="85" y2="85" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#0284c7" />
+              <stop offset="100%" stopColor="#1e40af" />
+            </linearGradient>
+            <linearGradient id="waveBrightCyan" x1="18" y1="75" x2="82" y2="88" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#38bdf8" />
+              <stop offset="100%" stopColor="#0284c7" />
             </linearGradient>
           </defs>
         </svg>
@@ -95,3 +112,4 @@ export const Logo: React.FC<LogoProps> = ({
     </div>
   );
 };
+
