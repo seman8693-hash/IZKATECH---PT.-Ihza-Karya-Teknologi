@@ -1,0 +1,21 @@
+{
+  "name": "IZKATECH - PT. Ihza Karya Teknologi",
+  "short_name": "IZKATECH",
+  "description": "Solusi teknologi terintegrasi, andal, dan terukur. Layanan Data Center, CCTV, Access Control, Network Security, dan Mechanical Electrical di Indonesia.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#06b6d4",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "technology"],
+  "lang": "id",
+  "dir": "ltr"
+}
