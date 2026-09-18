@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Logo } from './Logo.tsx';
 import { ConcentricRingsArt } from './ConcentricRingsArt.tsx';
 import { SERVICES, COMPANY_INFO } from '../data/companyData.ts';
-import { ServiceItem } from '../types.ts';
+import { ServiceItem } from '../types/site.ts';
 import { 
   Server, 
   ShieldCheck, 
@@ -16,7 +16,6 @@ import {
   Wrench,
   ArrowRight,
   CheckCircle2,
-  SlidersHorizontal,
   ExternalLink
 } from 'lucide-react';
 
@@ -188,7 +187,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
 
         {/* Services Grid (10 Core Pillars) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredServices.map((service, index) => (
+          {filteredServices.map((service) => (
             <div
               key={service.id}
               id={`service-card-${service.id}`}

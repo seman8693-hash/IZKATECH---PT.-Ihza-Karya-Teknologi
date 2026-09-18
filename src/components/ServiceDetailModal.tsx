@@ -1,5 +1,5 @@
 import React from 'react';
-import { ServiceItem } from '../types.ts';
+import { ServiceItem } from '../types/site.ts';
 import { COMPANY_INFO } from '../data/companyData.ts';
 import { X, CheckCircle2, ArrowRight, ShieldCheck, Tag } from 'lucide-react';
 

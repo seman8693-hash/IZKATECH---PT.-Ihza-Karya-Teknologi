@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  getStoredChatSessions, 
   getOrCreateVisitorSession, 
   sendChatMessage, 
   markChatAsRead 
@@ -8,16 +7,13 @@ import {
 import { ChatSession } from '../types/admin.ts';
 import { SERVICES } from '../data/companyData.ts';
 import { 
-  MessageSquare, 
   X, 
   Send, 
   Headphones, 
   Building2, 
   User, 
   Phone, 
-  CheckCircle2, 
   ShieldCheck, 
-  Bot,
   Minimize2,
   Maximize2
 } from 'lucide-react';

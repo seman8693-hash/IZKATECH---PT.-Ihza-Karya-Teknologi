@@ -3,7 +3,6 @@ import { Logo } from './Logo.tsx';
 import { COMPANY_INFO } from '../data/companyData.ts';
 import { FacebookIcon, TikTokIcon, InstagramIcon } from './SocialIcons.tsx';
 import { getStoredChatSessions } from '../data/adminStore.ts';
-import { ChatSession } from '../types/admin.ts';
 import { Menu, X, Phone, MessageSquare, Calculator, ChevronRight, Lock } from 'lucide-react';
 
 interface NavbarProps {
@@ -20,7 +19,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   setLang, 
   onOpenEstimator,
   onOpenSlideDeck,
-  onOpenAdmin 
+  onOpenAdmin,
+  onOpenLiveChat
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -167,6 +167,24 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
+          {/* Live Chat Pengunjung CTA (badge unread dari LiveChatWidget) */}
+          {onOpenLiveChat && (
+            <button
+              id="nav-livechat-btn"
+              onClick={onOpenLiveChat}
+              className="relative hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-300 bg-slate-900/90 hover:text-cyan-300 hover:border-cyan-500/50 hover:bg-slate-800 border border-slate-800 rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0"
+              title="Live Chat dengan Tim IZKATECH"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <span>Live Chat</span>
+              {chatBadgeCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">
+                  {chatBadgeCount}
+                </span>
+              )}
+            </button>
+          )}
+
           {/* Portal Admin CTA */}
           <button
             id="nav-admin-btn"
@@ -269,6 +287,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Calculator className="w-4 h-4 text-cyan-400" />
               {lang === 'id' ? 'Kalkulator Estimasi Kebutuhan (RFP)' : 'RFP Requirements Calculator'}
+            </button>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenLiveChat?.();
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-slate-900 border border-cyan-500/40 text-xs font-semibold text-cyan-300"
+            >
+              <MessageSquare className="w-4 h-4 text-cyan-400" />
+              <span>Live Chat dengan Tim IZKATECH</span>
+              {chatBadgeCount > 0 && (
+                <span className="px-1.5 rounded-full bg-rose-500 text-white text-[9px] font-bold">{chatBadgeCount}</span>
+              )}
             </button>
             <button
               onClick={() => {

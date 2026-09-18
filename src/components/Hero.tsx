@@ -1,17 +1,10 @@
 import React from 'react';
 import { Logo } from './Logo.tsx';
 import { IsometricCoverTechArt } from './IsometricCoverTechArt.tsx';
-import { COMPANY_INFO } from '../data/companyData.ts';
 import { 
-  ShieldCheck, 
   ArrowRight, 
-  Server, 
-  Zap, 
   CheckCircle2, 
-  Sparkles,
-  ChevronDown,
-  FileText,
-  PhoneCall
+  ChevronDown
 } from 'lucide-react';
 
 interface HeroProps {

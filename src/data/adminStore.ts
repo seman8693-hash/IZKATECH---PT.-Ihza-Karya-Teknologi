@@ -1,4 +1,4 @@
-import { AdminInquiry, AdminProject, AdminNotification, ChatSession, ChatMessage } from '../types/admin.ts';
+import { AdminInquiry, AdminProject, ChatSession, ChatMessage } from '../types/admin.ts';
 
 const INQUIRIES_STORAGE_KEY = 'izkatech_admin_inquiries';
 const PROJECTS_STORAGE_KEY = 'izkatech_admin_projects';
@@ -458,20 +458,55 @@ export const deleteProject = (id: string) => {
   return updated;
 };
 
+// -------------------------------------------------------------
+// ADMIN AUTHENTICATION (email + kata sandi)
+// -------------------------------------------------------------
+const ADMIN_SESSION_VALUE = 'authenticated_izkatech_admin';
+
+export interface AdminAccount {
+  email: string;
+  name: string;
+  role: string;
+}
+
+/** Akun admin internal. Ganti dengan verifikasi backend/SSO saat API tersedia. */
+const ADMIN_ACCOUNTS: (AdminAccount & { password: string })[] = [
+  { email: 'admin@izkatech.co.id', password: 'izkatech2026', name: 'Administrator IZKATECH', role: 'Super Admin' },
+  { email: 'iingzaenal@gmail.com', password: 'izkatech2026', name: 'Eng. Iing Zaenal', role: 'Solution Architect' },
+];
+
+/** Validasi kredensial admin; mengembalikan profil akun bila cocok, null bila gagal. */
+export const verifyAdminCredentials = (email: string, password: string): AdminAccount | null => {
+  const normalizedEmail = email.trim().toLowerCase();
+  const found = ADMIN_ACCOUNTS.find(
+    (account) => account.email.toLowerCase() === normalizedEmail && account.password === password
+  );
+  if (!found) return null;
+  return { email: found.email, name: found.name, role: found.role };
+};
+
+/** Sesi admin aktif? (localStorage = "Ingat sesi saya", sessionStorage = sesi browser saja) */
 export const checkAdminAuth = (): boolean => {
   try {
-    return localStorage.getItem(AUTH_STORAGE_KEY) === 'authenticated_izkatech_admin';
+    return (
+      localStorage.getItem(AUTH_STORAGE_KEY) === ADMIN_SESSION_VALUE ||
+      sessionStorage.getItem(AUTH_STORAGE_KEY) === ADMIN_SESSION_VALUE
+    );
   } catch {
     return false;
   }
 };
 
-export const setAdminAuth = (authenticated: boolean) => {
+export const setAdminAuth = (authenticated: boolean, rememberSession = true) => {
   try {
     if (authenticated) {
-      localStorage.setItem(AUTH_STORAGE_KEY, 'authenticated_izkatech_admin');
+      const activeStorage = rememberSession ? localStorage : sessionStorage;
+      const otherStorage = rememberSession ? sessionStorage : localStorage;
+      otherStorage.removeItem(AUTH_STORAGE_KEY);
+      activeStorage.setItem(AUTH_STORAGE_KEY, ADMIN_SESSION_VALUE);
     } else {
       localStorage.removeItem(AUTH_STORAGE_KEY);
+      sessionStorage.removeItem(AUTH_STORAGE_KEY);
     }
   } catch (e) {
     console.error('Auth storage error', e);
@@ -562,7 +597,20 @@ export const getOrCreateVisitorSession = (initialData?: {
 
   if (currentId) {
     const found = sessions.find(s => s.id === currentId);
-    if (found) return found;
+    if (found) {
+      // Sesi lama dipakai kembali; lengkapi profilnya bila data baru dikirim dari form widget
+      if (!initialData) return found;
+      const updatedSession: ChatSession = {
+        ...found,
+        visitorName: initialData.name || found.visitorName,
+        visitorPhone: initialData.phone || found.visitorPhone,
+        visitorEmail: initialData.email || found.visitorEmail,
+        visitorCompany: initialData.company || found.visitorCompany,
+        serviceInterest: initialData.service || found.serviceInterest,
+      };
+      saveChatSessions(sessions.map(s => (s.id === found.id ? updatedSession : s)));
+      return updatedSession;
+    }
   }
 
   const now = new Date();

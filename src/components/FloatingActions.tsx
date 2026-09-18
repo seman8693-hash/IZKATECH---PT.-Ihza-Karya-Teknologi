@@ -4,9 +4,10 @@ import { MessageSquare, Calculator, ArrowUp, Phone } from 'lucide-react';
 
 interface FloatingActionsProps {
   onOpenEstimator: () => void;
+  onOpenLiveChat?: () => void;
 }
 
-export const FloatingActions: React.FC<FloatingActionsProps> = ({ onOpenEstimator }) => {
+export const FloatingActions: React.FC<FloatingActionsProps> = ({ onOpenEstimator, onOpenLiveChat }) => {
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
@@ -43,6 +44,18 @@ export const FloatingActions: React.FC<FloatingActionsProps> = ({ onOpenEstimato
         <Calculator className="w-4 h-4 text-cyan-400" />
         <span>Kalkulator RFP</span>
       </button>
+
+      {/* Live Chat Button (membuka LiveChatWidget pengunjung) */}
+      {onOpenLiveChat && (
+        <button
+          onClick={onOpenLiveChat}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900/95 text-slate-100 hover:text-white border border-blue-500/50 shadow-xl backdrop-blur-md transition-all text-xs font-semibold cursor-pointer hover:bg-slate-800 hover:scale-105"
+          title="Live Chat dengan Tim IZKATECH"
+        >
+          <MessageSquare className="w-4 h-4 text-blue-400" />
+          <span>Live Chat</span>
+        </button>
+      )}
 
       {/* Main WhatsApp Direct Floating Button */}
       <a

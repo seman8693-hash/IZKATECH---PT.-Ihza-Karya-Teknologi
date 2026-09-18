@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PROJECTS } from '../data/companyData.ts';
-import { ProjectItem } from '../types.ts';
+import { ProjectItem } from '../types/site.ts';
 import { getStoredProjects, sectorPlaceholderImage } from '../data/adminStore.ts';
 import { AdminProject } from '../types/admin.ts';
 import { 
@@ -8,11 +8,8 @@ import {
   MapPin, 
   Search, 
   CheckCircle2, 
-  Clock, 
-  Briefcase, 
-  Sparkles,
+  Briefcase,
   ChevronRight,
-  Filter,
   X,
   Calendar
 } from 'lucide-react';

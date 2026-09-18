@@ -4,21 +4,14 @@ import { IsometricCoverTechArt } from './IsometricCoverTechArt.tsx';
 import { GeometricPrismArt } from './GeometricPrismArt.tsx';
 import { ConcentricRingsArt } from './ConcentricRingsArt.tsx';
 import { EquipmentVisualShowcase } from './EquipmentVisualShowcase.tsx';
-import { COMPANY_INFO, SERVICES, PROJECTS, BRAND_PARTNERS } from '../data/companyData.ts';
+import { COMPANY_INFO, PROJECTS, BRAND_PARTNERS } from '../data/companyData.ts';
 import { 
   X, 
   ChevronLeft, 
   ChevronRight, 
-  Maximize2, 
-  CheckCircle, 
-  Server, 
-  Shield, 
-  Zap, 
   Phone, 
   Mail, 
-  MapPin, 
-  Building2, 
-  Cpu
+  MapPin
 } from 'lucide-react';
 
 interface PresentationSlideDeckProps {

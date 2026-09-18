@@ -1,6 +1,6 @@
 import React from 'react';
 import { Logo } from './Logo.tsx';
-import { COMPANY_INFO, SERVICES } from '../data/companyData.ts';
+import { COMPANY_INFO } from '../data/companyData.ts';
 import { FacebookIcon, TikTokIcon, InstagramIcon } from './SocialIcons.tsx';
 import { 
   Phone, 

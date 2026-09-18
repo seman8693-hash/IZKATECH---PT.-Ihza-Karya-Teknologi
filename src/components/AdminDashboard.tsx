@@ -3,7 +3,6 @@ import { Logo } from './Logo.tsx';
 import { 
   getStoredInquiries, 
   updateInquiry,
-  updateInquiryStatus, 
   deleteInquiry,
   getStoredProjects,
   saveProject,
@@ -11,6 +10,7 @@ import {
   deleteProject,
   setAdminAuth,
   checkAdminAuth,
+  verifyAdminCredentials,
   getStoredChatSessions,
   sendChatMessage,
   markChatAsRead,
@@ -25,41 +25,27 @@ import { AdminSidebar, AdminTab } from './dashboard/AdminSidebar.tsx';
 import { StatsCard } from './dashboard/StatsCard.tsx';
 import { ProjectFormModal } from './dashboard/ProjectFormModal.tsx';
 import { 
-  ShieldCheck, 
   Lock, 
   LogOut, 
-  ExternalLink, 
   Inbox, 
   Briefcase, 
   BarChart3, 
-  Settings, 
-  Search, 
-  Filter, 
-  Phone, 
-  Mail, 
-  Calendar, 
   Trash2, 
   CheckCircle, 
   Clock, 
   FileSpreadsheet, 
-  Building2, 
-  CheckCircle2, 
   AlertCircle, 
-  Plus, 
-  Layers, 
-  Server, 
+  Plus,
   FileText,
-  KeyRound,
   ArrowUpRight,
+  ArrowRight,
+  ExternalLink,
   Eye,
+  EyeOff,
   Pencil,
-  Edit3,
   Headphones,
-  MessageSquare,
-  Send,
-  Users,
-  Archive,
-  Check,
+  ShieldCheck,
+  User,
   Menu,
   MapPin
 } from 'lucide-react';
@@ -68,9 +54,19 @@ interface AdminDashboardProps {
   onBackToWebsite: () => void;
 }
 
+/** Normalisasi nomor kontak klien (08xx / +62xxx) menjadi tautan wa.me */
+const waLink = (phone: string): string => {
+  const digits = phone.replace(/\D/g, '');
+  const normalized = digits.startsWith('0') ? `62${digits.slice(1)}` : digits;
+  return `https://wa.me/${normalized}`;
+};
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [pinInput, setPinInput] = useState<string>('');
+  const [emailInput, setEmailInput] = useState<string>('');
+  const [passwordInput, setPasswordInput] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [rememberSession, setRememberSession] = useState<boolean>(true);
   const [loginError, setLoginError] = useState<string>('');
   
     // Dashboard Navigation State
@@ -86,22 +82,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   const selectedChatSessionIdRef = useRef<string | null>(null);
   
   // Search and Filter State
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedInquiry, setSelectedInquiry] = useState<AdminInquiry | null>(null);
 
   // New / Edit Project Form State
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState<boolean>(false);
   const [editingProject, setEditingProject] = useState<AdminProject | null>(null);
-  const [newProject, setNewProject] = useState<Omit<AdminProject, 'id'>>({
-    title: '',
-    clientName: '',
-    category: 'Data Center & Network Infrastructure',
-    year: new Date().getFullYear().toString(),
-    status: 'in_progress',
-    valueApprox: 'Rp 150.000.000',
-    description: ''
-  });
 
   // Edit Inquiry Modal State
   const [editingInquiry, setEditingInquiry] = useState<AdminInquiry | null>(null);
@@ -201,29 +186,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Default Admin PIN: 2026 or 1234 or admin
-    if (pinInput === '2026' || pinInput === 'admin' || pinInput === 'izkatech2026') {
-      setIsAuthenticated(true);
-      setAdminAuth(true);
-      setLoginError('');
-      loadData();
-    } else {
-      setLoginError('Kode PIN Keamanan salah. Silakan coba: 2026');
+    const account = verifyAdminCredentials(emailInput, passwordInput);
+    if (!account) {
+      setLoginError('Email atau kata sandi tidak sesuai. Periksa kembali atau hubungi IT Support.');
+      return;
     }
+    setIsAuthenticated(true);
+    setAdminAuth(true, rememberSession);
+    setLoginError('');
+    setPasswordInput('');
+    loadData();
+  };
+
+  /** Permintaan reset kata sandi diteruskan ke IT Support melalui WhatsApp */
+  const handleForgotPassword = () => {
+    const requester = emailInput.trim() || '(isi email akun Anda)';
+    const text = encodeURIComponent(
+      `Halo IT Support IZKATECH, akun Portal Admin ${requester} mengalami kendala login (lupa kata sandi). Mohon bantuan proses reset.`
+    );
+    window.open(`https://wa.me/${COMPANY_INFO.whatsappNumber}?text=${text}`, '_blank');
   };
 
   const handleLogout = () => {
     setAdminAuth(false);
     setIsAuthenticated(false);
-    setPinInput('');
-  };
-
-  const handleStatusChange = (id: string, status: AdminInquiry['status']) => {
-    const updated = updateInquiryStatus(id, status);
-    setInquiries(updated);
-    if (selectedInquiry && selectedInquiry.id === id) {
-      setSelectedInquiry({ ...selectedInquiry, status });
-    }
+    setEmailInput('');
+    setPasswordInput('');
+    setLoginError('');
   };
 
   const handleDeleteInquiry = (id: string) => {
@@ -234,10 +223,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
         setSelectedInquiry(null);
       }
     }
-  };
-
-  const handleOpenEditInquiry = (inquiry: AdminInquiry) => {
-    setEditingInquiry({ ...inquiry });
   };
 
   const handleSaveEditedInquiry = (e: React.FormEvent) => {
@@ -251,52 +236,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     setEditingInquiry(null);
   };
 
-  const handleOpenCreateProject = () => {
-    setEditingProject(null);
-    setNewProject({
-      title: '',
-      clientName: '',
-      category: 'Data Center & Network Infrastructure',
-      year: new Date().getFullYear().toString(),
-      status: 'in_progress',
-      valueApprox: 'Rp 200.000.000',
-      description: ''
-    });
-    setIsAddProjectModalOpen(true);
-  };
-
   const handleOpenEditProject = (proj: AdminProject) => {
     setEditingProject(proj);
-    setNewProject({
-      title: proj.title,
-      clientName: proj.clientName,
-      category: proj.category,
-      year: proj.year,
-      status: proj.status,
-      valueApprox: proj.valueApprox || '',
-      description: proj.description
-    });
     setIsAddProjectModalOpen(true);
-  };
-
-  const handleSaveProjectForm = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProject.title || !newProject.clientName) {
-      alert('Mohon lengkapi judul proyek dan nama instansi klien.');
-      return;
-    }
-    if (editingProject) {
-      const updatedList = updateProject({
-        ...editingProject,
-        ...newProject
-      });
-      setProjects(updatedList);
-    } else {
-      saveProject(newProject);
-      setProjects(getStoredProjects());
-    }
-    setIsAddProjectModalOpen(false);
-    setEditingProject(null);
   };
 
   const handleDeleteProject = (id: string) => {
@@ -331,17 +273,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     document.body.removeChild(link);
   };
 
-  const filteredInquiries = inquiries.filter(item => {
-    const matchesSearch = 
-      item.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.notes.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.phone.includes(searchTerm);
-    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-    // Calculate Metrics
+  // Calculate Metrics
   const totalInquiries = inquiries.length;
   const newInquiries = inquiries.filter(i => i.status === 'new').length;
   const inProgressInquiries = inquiries.filter(i => i.status === 'survey' || i.status === 'contacted').length;
@@ -350,100 +282,157 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   // Calculate Chat Metrics
   const activeChats = chatSessions.filter(s => s.status === 'active').length;
   const unreadAdminMessages = chatSessions.reduce((sum, s) => sum + s.unreadCountAdmin, 0);
-  const totalChatSessions = chatSessions.length;
 
   // -------------------------------------------------------------
   // LOGIN SCREEN (If not authenticated)
   // -------------------------------------------------------------
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
-        {/* Background ambient lighting */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-cyan-500/10 blur-[130px] pointer-events-none rounded-full" />
-        <div className="absolute bottom-10 right-10 w-72 h-72 bg-blue-600/10 blur-[100px] pointer-events-none rounded-full" />
+      <div className="min-h-screen bg-gradient-to-b from-white via-slate-50 to-slate-100 text-slate-800 flex flex-col items-center justify-center px-4 py-10 relative overflow-hidden">
+        {/* Background ambient lighting (brand cyan & orange) */}
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[560px] h-[320px] bg-cyan-400/10 blur-[130px] pointer-events-none rounded-full" />
+        <div className="absolute bottom-0 right-0 w-72 h-72 bg-orange-300/10 blur-[110px] pointer-events-none rounded-full" />
 
         <div className="w-full max-w-md relative z-10">
-          {/* Card Container */}
-          <div className="bg-white border border-slate-200 rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-xl">
-            {/* Header Brand */}
-            <div className="text-center space-y-4 mb-8">
-              <div className="flex justify-center">
-                <Logo size="lg" variant="cyan-gold" />
-              </div>
-              <div className="space-y-1">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-600 text-xs font-mono font-semibold">
-                  <Lock className="w-3.5 h-3.5" />
-                  <span>INTERNAL CONTROL PANEL</span>
-                </div>
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-wide font-display pt-2">
-                  Portal Admin IZKATECH
-                </h1>
-                <p className="text-xs text-slate-500">
-                  Manajemen Prospek, Estimasi Biaya &amp; Portofolio Proyek
-                </p>
-              </div>
+          {/* Brand Header */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3.5 mb-5">
+            <Logo size="md" variant="cyan-gold" />
+            <div className="flex flex-col text-center sm:text-left sm:border-l sm:border-slate-200 sm:pl-3.5">
+              <span className="text-sm font-bold text-slate-900 leading-tight">PT Ihza Karya Teknologi</span>
+              <span className="text-[10px] text-cyan-700 leading-tight">Information Communication Technology</span>
+              <span className="text-[10px] text-cyan-700 leading-tight">System Integrator &amp; Mechanical Electrical</span>
             </div>
+          </div>
+
+          {/* Badge mode masuk admin */}
+          <div className="flex justify-center mb-6">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-cyan-700 text-[11px] font-semibold">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+              <span>masuk Admin</span>
+            </span>
+          </div>
+
+          {/* Card Autentikasi */}
+          <div className="bg-white border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/70 overflow-hidden">
+            {/* Garis gradien identitas brand */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-600" />
 
             {/* Login Form */}
-            <form onSubmit={handleLogin} className="space-y-5">
+            <form onSubmit={handleLogin} className="space-y-4 p-6 sm:p-7">
+              {/* Email */}
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-2 font-mono">
-                  MASUKKAN KODE PIN ADMIN
+                <label htmlFor="admin-email" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Email
                 </label>
                 <div className="relative">
+                  <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                   <input
-                    type="password"
-                    value={pinInput}
-                    onChange={(e) => setPinInput(e.target.value)}
-                    placeholder="Masukkan PIN (default: 2026)"
-                    className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 text-center text-lg tracking-widest font-mono shadow-inner"
+                    id="admin-email"
+                    type="email"
+                    required
                     autoFocus
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="nama@izkatech.co.id"
+                    autoComplete="username"
+                    className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:bg-white transition-colors"
                   />
-                  <KeyRound className="w-5 h-5 text-slate-500 absolute right-3.5 top-3.5" />
+                </div>
+              </div>
+
+              {/* Kata Sandi */}
+              <div>
+                <label htmlFor="admin-password" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Kata Sandi
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                  <input
+                    id="admin-password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    className="w-full pl-10 pr-11 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:bg-white transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-2.5 top-2 p-1.5 rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                    aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                    title={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
                 {loginError && (
-                  <p className="text-xs text-rose-600 flex items-center gap-1.5 mt-2">
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <p className="text-xs text-rose-600 flex items-start gap-1.5 mt-2">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                     <span>{loginError}</span>
                   </p>
                 )}
               </div>
 
-              <div className="flex flex-col gap-2.5">
-                <button
-                  type="submit"
-                  className="w-full py-3.5 px-4 rounded-xl font-bold text-slate-950 bg-gradient-to-r from-cyan-400 via-cyan-300 to-blue-400 hover:from-cyan-300 hover:to-blue-300 shadow-lg shadow-cyan-500/25 transition-all transform active:scale-[0.98] cursor-pointer text-sm"
-                >
-                  Buka Dashboard Admin
-                </button>
-
+              {/* Ingat sesi & lupa sandi */}
+              <div className="flex items-center justify-between pt-1">
+                <label className="inline-flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberSession}
+                    onChange={(e) => setRememberSession(e.target.checked)}
+                    className="w-3.5 h-3.5 accent-cyan-500 cursor-pointer"
+                  />
+                  <span>Ingat sesi saya</span>
+                </label>
                 <button
                   type="button"
-                  onClick={() => {
-                    setPinInput('2026');
-                    setIsAuthenticated(true);
-                    setAdminAuth(true);
-                    setLoginError('');
-                    loadData();
-                  }}
-                  className="w-full py-2.5 px-3 rounded-lg border border-cyan-500/40 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  onClick={handleForgotPassword}
+                  className="text-xs font-semibold text-cyan-700 hover:text-cyan-800 hover:underline cursor-pointer"
                 >
-                  <KeyRound className="w-3.5 h-3.5 text-cyan-600" />
-                  <span>Akses Cepat 1-Klik (Gunakan PIN: 2026)</span>
+                  Lupa sandi?
                 </button>
               </div>
-            </form>
 
-            <div className="mt-8 pt-6 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
               <button
-                onClick={onBackToWebsite}
-                className="inline-flex items-center gap-1.5 text-slate-500 hover:text-cyan-600 transition-colors cursor-pointer"
+                type="submit"
+                className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/25 transition-all transform active:scale-[0.99] cursor-pointer"
               >
-                <ArrowUpRight className="w-3.5 h-3.5 rotate-180" />
-                <span>Kembali ke Website Publik</span>
+                <span>Masuk ke Dashboard</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
-              <span className="font-mono text-[11px] text-slate-600">v2.4 Enterprise</span>
-            </div>
+
+              <div className="pt-5 border-t border-slate-100 text-center">
+                <span className="text-[10px] font-mono text-slate-400">
+                  Akun demo: admin@izkatech.co.id · izkatech2026
+                </span>
+              </div>
+            </form>
+          </div>
+
+          {/* Bantuan akun & legal */}
+          <div className="text-center mt-6 space-y-3">
+            <p className="text-xs text-slate-600">
+              Mengalami kendala akun?{' '}
+              <a
+                href={`mailto:${COMPANY_INFO.email}?subject=${encodeURIComponent('Kendala Akun Portal Admin IZKATECH')}`}
+                className="font-semibold text-cyan-700 hover:text-cyan-800 inline-flex items-center gap-1"
+              >
+                <span>Hubungi IT Support</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </p>
+            <p className="text-[11px] text-slate-400">
+              &copy; {new Date().getFullYear()} PT Ihza Karya Teknologi. All rights reserved.
+            </p>
+            <button
+              onClick={onBackToWebsite}
+              className="inline-flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-cyan-600 transition-colors cursor-pointer"
+            >
+              <ArrowUpRight className="w-3 h-3 rotate-180" />
+              <span>Kembali ke Website Publik</span>
+            </button>
           </div>
         </div>
       </div>
@@ -697,8 +686,148 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
           </div>
         )}
 
+        {/* -------------------------------------------------------------
+            KONTEN TAB PROSPEK (daftar inquiry + aksi SPH / PKS)
+            ------------------------------------------------------------- */}
+        {currentTab === 'inquiries' && (
+          <div className="space-y-5">
+            {/* Ringkasan status prospek */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-slate-500">Total {inquiries.length} prospek</span>
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">New {newInquiries}</span>
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">Follow-up {inProgressInquiries}</span>
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Deal {dealInquiries}</span>
+            </div>
+
+            <div className="space-y-3">
+              {inquiries.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-cyan-300 transition-all space-y-3"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                        {item.clientName.charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-bold text-slate-900 truncate">{item.clientName}</div>
+                        <div className="text-[11px] text-slate-500 truncate">
+                          {item.companyName} • {item.phone} • {item.email}
+                        </div>
+                        <div className="text-[10px] font-mono text-slate-400 mt-0.5">
+                          {item.id} • {item.timestamp} • Sumber: {item.source}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase ${
+                        item.status === 'new'
+                          ? 'bg-amber-100 text-amber-700'
+                          : item.status === 'deal'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-blue-100 text-blue-700'
+                      }`}>
+                        {item.status}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase ${
+                        item.priority === 'high'
+                          ? 'bg-rose-100 text-rose-700'
+                          : item.priority === 'medium'
+                          ? 'bg-slate-200 text-slate-700'
+                          : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        {item.priority}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Layanan, skala & estimasi yang diminati */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {item.serviceInterest.map((s) => (
+                      <span key={s} className="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] text-slate-600">
+                        {s}
+                      </span>
+                    ))}
+                    {item.scale && (
+                      <span className="px-2 py-0.5 rounded-full bg-cyan-50 border border-cyan-200 text-[10px] text-cyan-700">
+                        {item.scale}
+                      </span>
+                    )}
+                    {item.budgetEstimate && (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] text-emerald-700">
+                        {item.budgetEstimate}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-slate-600 leading-relaxed">{item.notes}</p>
+
+                  {/* Aksi prospek: edit, generate dokumen, follow-up WhatsApp, hapus */}
+                  <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => setEditingInquiry({ ...item })}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 hover:border-cyan-400 hover:text-cyan-700 text-[11px] font-semibold transition-colors cursor-pointer"
+                    >
+                      <Pencil className="w-3.5 h-3.5" /> Edit Prospek
+                    </button>
+                    <button
+                      onClick={() => openDocGenerator(item, 'SPH')}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-cyan-500/40 text-cyan-700 hover:bg-cyan-50 text-[11px] font-semibold transition-colors cursor-pointer"
+                    >
+                      <FileText className="w-3.5 h-3.5" /> Buat SPH
+                    </button>
+                    <button
+                      onClick={() => openDocGenerator(item, 'PKS')}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-indigo-500/40 text-indigo-700 hover:bg-indigo-50 text-[11px] font-semibold transition-colors cursor-pointer"
+                    >
+                      <FileText className="w-3.5 h-3.5" /> Buat PKS
+                    </button>
+                    <a
+                      href={waLink(item.phone)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-500/40 text-emerald-700 hover:bg-emerald-100 text-[11px] font-semibold transition-colors"
+                    >
+                      <Headphones className="w-3.5 h-3.5" /> WhatsApp
+                    </a>
+                    <button
+                      onClick={() => handleDeleteInquiry(item.id)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-rose-500/40 text-rose-600 hover:bg-rose-50 text-[11px] font-semibold transition-colors cursor-pointer ml-auto"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Hapus
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {inquiries.length === 0 && (
+                <div className="p-10 text-center text-xs text-slate-400 bg-white border border-dashed border-slate-300 rounded-2xl">
+                  Belum ada prospek masuk. Data dari formulir kalkulator &amp; kontak website akan tampil di sini.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
                 {currentTab === 'projects' && (
           <div className="space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 font-display">Portofolio Proyek</h2>
+                <p className="text-xs text-slate-500">Kelola proyek yang tampil pada katalog portofolio website.</p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingProject(null);
+                  setIsAddProjectModalOpen(true);
+                }}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold transition-colors cursor-pointer shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Proyek</span>
+              </button>
+            </div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-semibold text-slate-500">Total {projects.length} proyek</span>
               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Selesai {projects.filter(p => p.status === 'completed').length}</span>

@@ -9,9 +9,6 @@ import {
   Landmark, 
   CheckCircle2, 
   TrendingUp, 
-  Sparkles,
-  Zap,
-  ShieldCheck,
   Award
 } from 'lucide-react';
 

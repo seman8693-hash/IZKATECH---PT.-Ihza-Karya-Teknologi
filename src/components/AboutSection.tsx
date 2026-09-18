@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Logo } from './Logo.tsx';
 import { GeometricPrismArt } from './GeometricPrismArt.tsx';
 import { COMPANY_INFO } from '../data/companyData.ts';
 import { 
-  Building2, 
   Target, 
   Compass, 
-  CheckCircle, 
   Award, 
   Clock, 
   Users, 

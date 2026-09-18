@@ -3,11 +3,8 @@ import { COMPANY_INFO, SERVICES } from '../data/companyData.ts';
 import { saveInquiry } from '../data/adminStore.ts';
 import { 
   Calculator, 
-  Send, 
   Copy, 
   Check, 
-  Building, 
-  Sparkles, 
   MessageSquare, 
   Mail,
   ShieldCheck,

@@ -1,4 +1,4 @@
-import { ServiceItem, ProjectItem, BrandPartner, MarketSector } from '../types.ts';
+import { ServiceItem, ProjectItem, BrandPartner, MarketSector } from '../types/site.ts';
 
 export const COMPANY_INFO = {
   name: 'PT. IHZA KARYA TEKNOLOGI',

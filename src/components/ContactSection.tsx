@@ -6,12 +6,9 @@ import {
   Phone, 
   Mail, 
   MapPin, 
-  Globe, 
   Clock, 
   Send, 
   CheckCircle2, 
-  MessageSquare,
-  Building,
   Navigation
 } from 'lucide-react';
 

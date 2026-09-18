@@ -1,3 +1,8 @@
+/**
+ * Tipe data konten website publik (data statis katalog perusahaan).
+ * Untuk tipe data Portal Admin, lihat `src/types/admin.ts`.
+ */
+
 export interface ServiceItem {
   id: string;
   title: string;

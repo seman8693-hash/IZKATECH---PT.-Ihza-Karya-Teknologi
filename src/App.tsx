@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar.tsx';
 import { Hero } from './components/Hero.tsx';
 import { AboutSection } from './components/AboutSection.tsx';
@@ -18,7 +18,8 @@ import { FloatingActions } from './components/FloatingActions.tsx';
 import { ServiceDetailModal } from './components/ServiceDetailModal.tsx';
 import { PresentationSlideDeck } from './components/PresentationSlideDeck.tsx';
 import { AdminDashboard } from './components/AdminDashboard.tsx';
-import { ServiceItem } from './types.ts';
+import { LiveChatWidget } from './components/LiveChatWidget.tsx';
+import { ServiceItem } from './types/site.ts';
 
 export default function App() {
   const [lang, setLang] = useState<'id' | 'en'>('id');
@@ -26,6 +27,7 @@ export default function App() {
   const [preselectedEstimatorService, setPreselectedEstimatorService] = useState<string | null>(null);
   const [isSlideDeckOpen, setIsSlideDeckOpen] = useState(false);
   const [isAdminView, setIsAdminView] = useState<boolean>(false);
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const checkAdminRoute = () => {
@@ -86,6 +88,7 @@ export default function App() {
         onOpenEstimator={() => handleOpenEstimator()}
         onOpenSlideDeck={() => setIsSlideDeckOpen(true)}
         onOpenAdmin={handleOpenAdmin}
+        onOpenLiveChat={() => setIsChatOpen(true)}
       />
 
       {/* Main Content Sections */}
@@ -122,7 +125,13 @@ export default function App() {
       <Footer lang={lang} onOpenAdmin={handleOpenAdmin} />
 
       {/* Floating CTA Widgets */}
-      <FloatingActions onOpenEstimator={() => handleOpenEstimator()} />
+      <FloatingActions
+        onOpenEstimator={() => handleOpenEstimator()}
+        onOpenLiveChat={() => setIsChatOpen(true)}
+      />
+
+      {/* Live Chat widget pengunjung — pesan masuk ke tab "Live Chat CRM" dashboard admin */}
+      <LiveChatWidget isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
 
       {/* Service Detail Modal */}
       <ServiceDetailModal
