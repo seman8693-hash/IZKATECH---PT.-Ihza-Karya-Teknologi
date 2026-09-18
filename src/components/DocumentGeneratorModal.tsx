@@ -13,7 +13,7 @@ interface DocItem {
 
 interface DocumentGeneratorModalProps {
   inquiry: AdminInquiry;
-  docType: 'SPH' | 'PKS';
+  docType: 'SPH' | 'PKS' | 'INVOICE';
   onClose: () => void;
 }
 
@@ -37,6 +37,8 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
   const [subject, setSubject] = useState(
     docType === 'SPH'
       ? `Penawaran Harga ${inquiry.serviceInterest.join(', ')}`
+      : docType === 'INVOICE'
+      ? `Tagihan / Invoice Pembayaran ${inquiry.serviceInterest.join(', ')}`
       : `Perjanjian Kerja Sama ${inquiry.serviceInterest.join(', ')}`
   );
   const [items, setItems] = useState<DocItem[]>([
@@ -45,6 +47,8 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
   const [terms, setTerms] = useState(
     docType === 'SPH'
       ? '1. Penawaran harga berlaku selama 30 hari kalender.\n2. Harga belum termasuk PPN 11%.\n3. Pembayaran: DP 50% saat SPK, 50% setelah serah terima (BAST).\n4. Waktu pelaksanaan menyesuaikan jadwal survei & kesepakatan.'
+      : docType === 'INVOICE'
+      ? '1. Pembayaran mohon ditransfer melalui rekening PT. Ihza Karya Teknologi.\n2. Harap cantumkan nomor Invoice pada berita transfer.\n3. Konfirmasi transfer / bukti bayar dapat dikirimkan melalui WhatsApp resmi.\n4. Terima kasih atas kerja sama Anda.'
       : 'Pasal 1 â€” Lingkup Pekerjaan: sesuai rincian teknis dan BoQ yang disepakati.\nPasal 2 â€” Nilai Kontrak: sebesar nilai total pekerjaan dalam Surat Penawaran terlampir.\nPasal 3 â€” Jangka Waktu: pelaksanaan sesuai jadwal yang disepakati kedua belah pihak.\nPasal 4 â€” Pembayaran: termin sesuai progres pekerjaan dan kesepakatan.\nPasal 5 â€” Kedua belah pihak wajib menjaga kerahasiaan data dan informasi proyek.'
   );
 
@@ -65,8 +69,8 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-200 print:hidden">
           <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-            {docType === 'SPH' ? <FileText className="w-4 h-4 text-cyan-600" /> : <FileSignature className="w-4 h-4 text-cyan-600" />}
-            {docType === 'SPH' ? 'Buat Surat Penawaran Harga (SPH)' : 'Buat Perjanjian Kerja Sama (PKS)'} â€” {inquiry.id}
+            {docType === 'SPH' ? <FileText className="w-4 h-4 text-cyan-600" /> : docType === 'INVOICE' ? <FileText className="w-4 h-4 text-emerald-600" /> : <FileSignature className="w-4 h-4 text-cyan-600" />}
+            {docType === 'SPH' ? 'Buat Surat Penawaran Harga (SPH)' : docType === 'INVOICE' ? 'Buat Invoice Pembayaran' : 'Buat Perjanjian Kerja Sama (PKS)'} â€” {inquiry.id}
           </h3>
           <div className="flex items-center gap-2">
             <button
@@ -194,24 +198,26 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
               {/* Title */}
               <div className="text-center mt-5">
                 <div className="font-bold text-base underline uppercase tracking-wide">
-                  {docType === 'SPH' ? 'Surat Penawaran Harga' : 'Perjanjian Kerja Sama'}
+                  {docType === 'SPH' ? 'Surat Penawaran Harga' : docType === 'INVOICE' ? 'INVOICE PEMBAYARAN' : 'Perjanjian Kerja Sama'}
                 </div>
                 <div className="text-[10px] text-slate-500 mt-1">Nomor: {docNumber}</div>
               </div>
 
-              {docType === 'SPH' ? (
+              {docType === 'SPH' || docType === 'INVOICE' ? (
                 <>
                   <div className="mt-5 text-[11px]">
-                    <div>Kepada Yth.</div>
+                    <div>{docType === 'INVOICE' ? 'Tagihan Kepada:' : 'Kepada Yth.'}</div>
                     <div className="font-bold">{clientCompany}</div>
                     {clientAddress && <div className="whitespace-pre-wrap text-slate-600">{clientAddress}</div>}
                     <div>U.P. {attention}</div>
                   </div>
-                  <p className="mt-3">Dengan hormat,</p>
-                  <p className="mt-1">
-                    Bersama surat ini, kami <strong>{COMPANY_INFO.name}</strong> bermaksud mengajukan penawaran harga untuk:{' '}
-                    <strong>{subject}</strong>. Rincian penawaran sebagai berikut:
-                  </p>
+                  <p className="mt-3">{docType === 'INVOICE' ? 'Dengan hormat, berikut adalah rincian tagihan / invoice pembayaran untuk pekerjaan berikut:' : 'Dengan hormat,'}</p>
+                  {docType === 'SPH' && (
+                    <p className="mt-1">
+                      Bersama surat ini, kami <strong>{COMPANY_INFO.name}</strong> bermaksud mengajukan penawaran harga untuk:{' '}
+                      <strong>{subject}</strong>. Rincian penawaran sebagai berikut:
+                    </p>
+                  )}
                   <table className="w-full mt-3 border-collapse text-[10px]">
                     <thead>
                       <tr className="bg-slate-100">
@@ -240,9 +246,9 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
                       </tr>
                     </tbody>
                   </table>
-                  <p className="mt-3 font-semibold">Syarat &amp; Ketentuan:</p>
+                  <p className="mt-3 font-semibold">{docType === 'INVOICE' ? 'Instruksi Pembayaran & Catatan:' : 'Syarat & Ketentuan:'}</p>
                   <p className="whitespace-pre-wrap text-[10px]">{terms}</p>
-                  <p className="mt-3">Demikian penawaran ini kami sampaikan. Besar harapan kami untuk dapat bekerja sama dengan perusahaan Bapak/Ibu.</p>
+                  <p className="mt-3">{docType === 'INVOICE' ? 'Demikian invoice ini diterbitkan agar dapat dipergunakan sebagaimana mestinya. Terima kasih.' : 'Demikian penawaran ini kami sampaikan. Besar harapan kami untuk dapat bekerja sama dengan perusahaan Bapak/Ibu.'}</p>
                 </>
               ) : (
                 <>

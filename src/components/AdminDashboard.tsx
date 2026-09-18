@@ -92,11 +92,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   // Edit Inquiry Modal State
   const [editingInquiry, setEditingInquiry] = useState<AdminInquiry | null>(null);
 
-  // Document Generator (SPH / PKS) State
+  // Document Generator (SPH / PKS / Invoice) State
   const [docGenInquiry, setDocGenInquiry] = useState<AdminInquiry | null>(null);
-  const [docGenType, setDocGenType] = useState<'SPH' | 'PKS'>('SPH');
+  const [docGenType, setDocGenType] = useState<'SPH' | 'PKS' | 'INVOICE'>('SPH');
 
-  const openDocGenerator = (inquiry: AdminInquiry, type: 'SPH' | 'PKS') => {
+  const openDocGenerator = (inquiry: AdminInquiry, type: 'SPH' | 'PKS' | 'INVOICE') => {
     setDocGenType(type);
     setDocGenInquiry(inquiry);
   };
@@ -774,6 +774,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-cyan-500/40 text-cyan-700 hover:bg-cyan-50 text-[11px] font-semibold transition-colors cursor-pointer"
                     >
                       <FileText className="w-3.5 h-3.5" /> Buat SPH
+                    </button>
+                    <button
+                      onClick={() => openDocGenerator(item, 'INVOICE')}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 text-[11px] font-semibold transition-colors cursor-pointer"
+                    >
+                      <FileText className="w-3.5 h-3.5" /> Buat Invoice
                     </button>
                     <button
                       onClick={() => openDocGenerator(item, 'PKS')}
