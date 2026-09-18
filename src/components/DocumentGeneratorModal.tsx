@@ -2,6 +2,7 @@
 import { AdminInquiry } from '../types/admin.ts';
 import { COMPANY_INFO } from '../data/companyData.ts';
 import { X, Printer, Plus, Trash2, FileText, FileSignature } from 'lucide-react';
+import { Logo } from './Logo.tsx';
 
 interface DocItem {
   description: string;
@@ -177,7 +178,7 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
               {/* Letterhead */}
               <div className="flex items-start justify-between border-b-4 border-cyan-600 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-cyan-700 text-slate-900 flex items-center justify-center font-bold text-base">IZ</div>
+                  <Logo size="sm" variant="cyan-gold" showSubtitle={false} className="shrink-0" />
                   <div>
                     <div className="font-bold text-sm tracking-wide">{COMPANY_INFO.name}</div>
                     <div className="text-[10px] text-slate-600">{COMPANY_INFO.subheading}</div>
@@ -250,7 +251,10 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
                   </p>
                   <div className="mt-2 grid grid-cols-2 gap-4 text-[10px]">
                     <div className="border border-slate-400 rounded-lg p-2.5">
-                      <div className="font-bold text-[11px]">PIHAK PERTAMA</div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Logo size="sm" variant="cyan-gold" showSubtitle={false} className="shrink-0" />
+                        <div className="font-bold text-[11px]">PIHAK PERTAMA</div>
+                      </div>
                       <div>{COMPANY_INFO.name}</div>
                       <div className="text-slate-600">{COMPANY_INFO.address}</div>
                     </div>
