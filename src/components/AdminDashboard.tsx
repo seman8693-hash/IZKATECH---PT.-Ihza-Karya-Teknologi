@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Logo } from './Logo.tsx';
 import { 
   getStoredInquiries, 
@@ -10,10 +10,17 @@ import {
   updateProject,
   deleteProject,
   setAdminAuth,
-  checkAdminAuth
+  checkAdminAuth,
+  getStoredChatSessions,
+  sendChatMessage,
+  markChatAsRead,
+  updateChatSessionStatus,
+  deleteChatSession
 } from '../data/adminStore.ts';
-import { AdminInquiry, AdminProject } from '../types/admin.ts';
+import { AdminInquiry, AdminProject, ChatSession } from '../types/admin.ts';
 import { COMPANY_INFO, SERVICES, BRAND_PARTNERS } from '../data/companyData.ts';
+import { ChatCRMTab } from './ChatCRMTab.tsx';
+import { DocumentGeneratorModal } from './DocumentGeneratorModal.tsx';
 import { 
   ShieldCheck, 
   Lock, 
@@ -43,7 +50,13 @@ import {
   ArrowUpRight,
   Eye,
   Pencil,
-  Edit3
+  Edit3,
+  Headphones,
+  MessageSquare,
+  Send,
+  Users,
+  Archive,
+  Check
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -55,10 +68,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   const [pinInput, setPinInput] = useState<string>('');
   const [loginError, setLoginError] = useState<string>('');
   
-  // Dashboard Navigation State
-  const [currentTab, setCurrentTab] = useState<'inquiries' | 'projects' | 'services' | 'analytics'>('inquiries');
+    // Dashboard Navigation State
+  const [currentTab, setCurrentTab] = useState<'inquiries' | 'projects' | 'services' | 'analytics' | 'chat'>('inquiries');
   const [inquiries, setInquiries] = useState<AdminInquiry[]>([]);
   const [projects, setProjects] = useState<AdminProject[]>([]);
+  
+    // Chat CRM State
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+  const [selectedChatSession, setSelectedChatSession] = useState<ChatSession | null>(null);
+  const [adminMessageInput, setAdminMessageInput] = useState('');
+  const selectedChatSessionIdRef = useRef<string | null>(null);
   
   // Search and Filter State
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -81,17 +100,97 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   // Edit Inquiry Modal State
   const [editingInquiry, setEditingInquiry] = useState<AdminInquiry | null>(null);
 
+  // Document Generator (SPH / PKS) State
+  const [docGenInquiry, setDocGenInquiry] = useState<AdminInquiry | null>(null);
+  const [docGenType, setDocGenType] = useState<'SPH' | 'PKS'>('SPH');
+
+  const openDocGenerator = (inquiry: AdminInquiry, type: 'SPH' | 'PKS') => {
+    setDocGenType(type);
+    setDocGenInquiry(inquiry);
+  };
+
+      // Keep the selected chat session ID ref in sync
+  useEffect(() => {
+    selectedChatSessionIdRef.current = selectedChatSession?.id || null;
+  }, [selectedChatSession]);
+
   useEffect(() => {
     const isAuthed = checkAdminAuth();
     setIsAuthenticated(isAuthed);
     if (isAuthed) {
       loadData();
     }
+
+    // Listen for real-time chat updates from visitor side
+    const handleChatUpdate = () => {
+      const sessions = getStoredChatSessions();
+      setChatSessions(sessions);
+      const currentId = selectedChatSessionIdRef.current;
+      if (currentId) {
+        const updated = sessions.find(s => s.id === currentId);
+        if (updated) {
+          setSelectedChatSession(updated);
+        }
+      }
+    };
+    window.addEventListener('izkatech_chat_updated', handleChatUpdate);
+    return () => {
+      window.removeEventListener('izkatech_chat_updated', handleChatUpdate);
+    };
   }, []);
 
   const loadData = () => {
     setInquiries(getStoredInquiries());
     setProjects(getStoredProjects());
+    const chatData = getStoredChatSessions();
+    setChatSessions(chatData);
+    if (chatData.length > 0 && !selectedChatSession) {
+      setSelectedChatSession(chatData[0]);
+    }
+  };
+
+  // ---- Chat CRM Handlers ----
+  const handleSelectChatSession = (session: ChatSession) => {
+    setSelectedChatSession(session);
+    markChatAsRead(session.id, 'admin');
+    const updated = getStoredChatSessions();
+    setChatSessions(updated);
+    setSelectedChatSession(updated.find(s => s.id === session.id) || session);
+  };
+
+  const handleSendAdminMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminMessageInput.trim() || !selectedChatSession) return;
+
+    const updated = sendChatMessage(
+      selectedChatSession.id,
+      adminMessageInput.trim(),
+      'admin',
+      'Eng. Dimas (IZKATECH Support)'
+    );
+    setChatSessions(updated);
+    const refreshed = updated.find(s => s.id === selectedChatSession.id);
+    if (refreshed) {
+      setSelectedChatSession(refreshed);
+    }
+    setAdminMessageInput('');
+  };
+
+  const handleResolveChat = (session: ChatSession) => {
+    const status: ChatSession['status'] = session.status === 'active' ? 'resolved' : 'active';
+    const updated = updateChatSessionStatus(session.id, status);
+    setChatSessions(updated);
+    setSelectedChatSession(updated.find(s => s.id === session.id) || session);
+  };
+
+  const handleDeleteChatSession = (session: ChatSession) => {
+    if (window.confirm(`Hapus seluruh riwayat chat dengan ${session.visitorName}?`)) {
+      const updated = deleteChatSession(session.id);
+      setChatSessions(updated);
+      if (selectedChatSession?.id === session.id) {
+        setSelectedChatSession(updated.length > 0 ? updated[0] : null);
+      }
+    }
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -236,11 +335,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
     return matchesSearch && matchesStatus;
   });
 
-  // Calculate Metrics
+    // Calculate Metrics
   const totalInquiries = inquiries.length;
   const newInquiries = inquiries.filter(i => i.status === 'new').length;
   const inProgressInquiries = inquiries.filter(i => i.status === 'survey' || i.status === 'contacted').length;
   const dealInquiries = inquiries.filter(i => i.status === 'deal').length;
+
+  // Calculate Chat Metrics
+  const activeChats = chatSessions.filter(s => s.status === 'active').length;
+  const unreadAdminMessages = chatSessions.reduce((sum, s) => sum + s.unreadCountAdmin, 0);
+  const totalChatSessions = chatSessions.length;
 
   // -------------------------------------------------------------
   // LOGIN SCREEN (If not authenticated)
@@ -422,7 +526,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             </div>
           </div>
 
-          <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
+                    <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-slate-400">Deal Proyek Selesai</span>
               <CheckCircle className="w-4 h-4 text-emerald-400" />
@@ -432,6 +536,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             </div>
             <div className="text-[11px] text-emerald-400 mt-1">
               Terkonfirmasi SPK
+            </div>
+          </div>
+
+          <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-400">Live Chat Aktif</span>
+              <Headphones className="w-4 h-4 text-cyan-400" />
+            </div>
+            <div className="mt-2 text-2xl sm:text-3xl font-bold text-cyan-400 font-display">
+              {activeChats}
+            </div>
+            <div className="text-[11px] text-rose-400 mt-1 font-mono">
+              {unreadAdminMessages} belum dibalas
             </div>
           </div>
         </div>
@@ -463,7 +580,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
               <span>Manajemen Proyek Portofolio ({projects.length})</span>
             </button>
 
-            <button
+                        <button
               onClick={() => setCurrentTab('services')}
               className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
                 currentTab === 'services'
@@ -473,6 +590,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             >
               <Layers className="w-4 h-4" />
               <span>Katalog Layanan &amp; Brand</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentTab('chat')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
+                currentTab === 'chat'
+                  ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20 font-bold'
+                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              }`}
+            >
+              <Headphones className="w-4 h-4" />
+              <span>Live Chat CRM</span>
+              {chatSessions.filter(s => s.unreadCountAdmin > 0).length > 0 && (
+                <span className="flex items-center justify-center w-5 h-5 text-[9px] font-mono font-bold text-white bg-rose-500 rounded-full">
+                  {chatSessions.filter(s => s.unreadCountAdmin > 0).length}
+                </span>
+              )}
             </button>
           </div>
 
@@ -672,6 +806,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                       </a>
                     </div>
 
+                    {/* Document Generator Buttons (SPH / PKS) */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-slate-400 font-mono">DOKUMEN PENAWARAN:</label>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <button
+                          onClick={() => openDocGenerator(selectedInquiry, 'SPH')}
+                          className="py-2 px-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          title="Buat Surat Penawaran Harga"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>Buat SPH</span>
+                        </button>
+                        <button
+                          onClick={() => openDocGenerator(selectedInquiry, 'PKS')}
+                          className="py-2 px-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          title="Buat Perjanjian Kerja Sama"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Buat PKS</span>
+                        </button>
+                      </div>
+                    </div>
+
                     {/* Status Changer */}
                     <div className="space-y-1.5">
                       <label className="text-xs text-slate-400 font-mono">STATUS PROSPEK:</label>
@@ -847,6 +1004,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                 ))}
               </div>
             </div>
+          </div>
+                )}
+
+        {/* -------------------------------------------------------------
+            TAB 4: LIVE CHAT CRM — Integrated chat conversation management
+            ------------------------------------------------------------- */}
+        {currentTab === 'chat' && (
+          <div className="space-y-6">
+            <ChatCRMTab
+              chatSessions={chatSessions}
+              selectedChatSession={selectedChatSession}
+              adminMessageInput={adminMessageInput}
+              setAdminMessageInput={setAdminMessageInput}
+              onSelectSession={handleSelectChatSession}
+              onSendAdminMessage={handleSendAdminMessage}
+              onRefresh={() => {
+                const sessions = getStoredChatSessions();
+                setChatSessions(sessions);
+                if (selectedChatSession) {
+                  setSelectedChatSession(sessions.find(s => s.id === selectedChatSession.id) || selectedChatSession);
+                }
+              }}
+              onResolveChat={handleResolveChat}
+              onDeleteChatSession={handleDeleteChatSession}
+            />
           </div>
         )}
 
@@ -1119,6 +1301,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             </form>
           </div>
         </div>
+      )}
+
+      {/* -------------------------------------------------------------
+          DOCUMENT GENERATOR MODAL (SPH / PKS)
+          ------------------------------------------------------------- */}
+      {docGenInquiry && (
+        <DocumentGeneratorModal
+          inquiry={docGenInquiry}
+          docType={docGenType}
+          onClose={() => setDocGenInquiry(null)}
+        />
       )}
 
       {/* Admin Dashboard Footer */}

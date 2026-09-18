@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Logo } from './Logo.tsx';
 import { COMPANY_INFO } from '../data/companyData.ts';
 import { FacebookIcon, TikTokIcon, InstagramIcon } from './SocialIcons.tsx';
+import { getStoredChatSessions } from '../data/adminStore.ts';
+import { ChatSession } from '../types/admin.ts';
 import { Menu, X, Phone, MessageSquare, Calculator, ChevronRight, Lock } from 'lucide-react';
 
 interface NavbarProps {
@@ -9,7 +11,8 @@ interface NavbarProps {
   setLang: (lang: 'id' | 'en') => void;
   onOpenEstimator: () => void;
   onOpenSlideDeck?: () => void;
-  onOpenAdmin?: () => void;
+    onOpenAdmin?: () => void;
+  onOpenLiveChat?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ 
@@ -21,6 +24,26 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [chatBadgeCount, setChatBadgeCount] = useState(0);
+
+  useEffect(() => {
+    const checkChatBadge = () => {
+      try {
+        const sessions = getStoredChatSessions();
+        const currentId = localStorage.getItem('izkatech_current_visitor_session_id');
+        if (currentId) {
+          const current = sessions.find(s => s.id === currentId);
+          const unread = current?.unreadCountVisitor || 0;
+          setChatBadgeCount(unread);
+        }
+      } catch {
+        setChatBadgeCount(0);
+      }
+    };
+    checkChatBadge();
+    window.addEventListener('izkatech_chat_updated', checkChatBadge);
+    return () => window.removeEventListener('izkatech_chat_updated', checkChatBadge);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
