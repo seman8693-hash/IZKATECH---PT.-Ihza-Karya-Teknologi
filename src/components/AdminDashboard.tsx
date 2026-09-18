@@ -38,14 +38,11 @@ import {
   AlertCircle, 
   Plus,
   FileText,
-  ArrowUpRight,
   ArrowRight,
-  ExternalLink,
   Eye,
   EyeOff,
   Pencil,
   Headphones,
-  ShieldCheck,
   User,
   Menu,
   MapPin
@@ -298,21 +295,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
         <div className="absolute bottom-0 right-0 w-72 h-72 bg-orange-300/10 blur-[110px] pointer-events-none rounded-full" />
 
         <div className="w-full max-w-md relative z-10">
-          {/* Brand Header */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3.5 mb-5">
-            <Logo size="md" variant="cyan-gold" />
-            <div className="flex flex-col text-center sm:text-left sm:border-l sm:border-slate-200 sm:pl-3.5">
-              <span className="text-sm font-bold text-slate-900 leading-tight">PT Ihza Karya Teknologi</span>
-              <span className="text-[10px] text-cyan-700 leading-tight">Information Communication Technology</span>
-              <span className="text-[10px] text-cyan-700 leading-tight">System Integrator &amp; Mechanical Electrical</span>
+          {/* Brand Header — logo kiri, nama perusahaan kanan, persis mockup */}
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Logo size="lg" showText={false} className="shrink-0" />
+            <div className="text-left leading-tight">
+              <div className="text-base font-bold text-slate-900">PT Ihza Karya Teknologi</div>
+              <div className="text-[11px] text-slate-600">Information Communication Technology</div>
+              <div className="text-[11px] font-semibold text-slate-800">System Integrator <span className="text-cyan-600">&amp;</span> Mechanical Electrical</div>
+              <div className="mt-1.5 h-1 w-24 rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400" />
             </div>
           </div>
 
+          {/* IZKATECH wordmark di bawah logo */}
+          <div className="text-center mb-1.5">
+            <div className="text-lg font-extrabold tracking-wide text-cyan-700 font-display">IZKATECH</div>
+            <div className="text-[9px] font-bold uppercase tracking-widest text-emerald-600">ICT System Integrator</div>
+          </div>
+
           {/* Badge mode masuk admin */}
-          <div className="flex justify-center mb-6">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-cyan-700 text-[11px] font-semibold">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>masuk Admin</span>
+          <div className="flex justify-center mb-5">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm text-slate-500 text-[11px] font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>Masuk Admin</span>
             </span>
           </div>
 
@@ -321,12 +325,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             {/* Garis gradien identitas brand */}
             <div className="h-1.5 w-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-600" />
 
-            {/* Login Form */}
-            <form onSubmit={handleLogin} className="space-y-4 p-6 sm:p-7">
+            {/* Login Form — label persis mockup: "email", "Kata Sandi" */}
+            <form onSubmit={handleLogin} className="px-6 sm:px-7 pt-5 pb-6 space-y-4">
               {/* Email */}
               <div>
-                <label htmlFor="admin-email" className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Email
+                <label htmlFor="admin-email" className="block text-xs font-medium text-slate-700 mb-1.5">
+                  email
                 </label>
                 <div className="relative">
                   <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
@@ -339,14 +343,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                     onChange={(e) => setEmailInput(e.target.value)}
                     placeholder="nama@izkatech.co.id"
                     autoComplete="username"
-                    className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:bg-white transition-colors"
+                    className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-colors"
                   />
                 </div>
               </div>
 
               {/* Kata Sandi */}
               <div>
-                <label htmlFor="admin-password" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label htmlFor="admin-password" className="block text-xs font-medium text-slate-700 mb-1.5">
                   Kata Sandi
                 </label>
                 <div className="relative">
@@ -359,7 +363,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                     onChange={(e) => setPasswordInput(e.target.value)}
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className="w-full pl-10 pr-11 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:bg-white transition-colors"
+                    className="w-full pl-10 pr-11 py-3 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-colors"
                   />
                   <button
                     type="button"
@@ -380,20 +384,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
               </div>
 
               {/* Ingat sesi & lupa sandi */}
-              <div className="flex items-center justify-between pt-1">
-                <label className="inline-flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+              <div className="flex items-center justify-between pt-0.5">
+                <label className="inline-flex items-center gap-2 text-xs text-slate-500 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={rememberSession}
                     onChange={(e) => setRememberSession(e.target.checked)}
-                    className="w-3.5 h-3.5 accent-cyan-500 cursor-pointer"
+                    className="w-3.5 h-3.5 rounded border-slate-300 accent-cyan-500 cursor-pointer"
                   />
                   <span>Ingat sesi saya</span>
                 </label>
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  className="text-xs font-semibold text-cyan-700 hover:text-cyan-800 hover:underline cursor-pointer"
+                  className="text-xs font-medium text-cyan-700 hover:text-cyan-800 hover:underline cursor-pointer"
                 >
                   Lupa sandi?
                 </button>
@@ -401,13 +405,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
 
               <button
                 type="submit"
-                className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/25 transition-all transform active:scale-[0.99] cursor-pointer"
+                className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-cyan-500 to-blue-800 hover:from-cyan-400 hover:to-blue-700 shadow-lg shadow-cyan-500/25 transition-all transform active:scale-[0.99] cursor-pointer"
               >
                 <span>Masuk ke Dashboard</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
-              <div className="pt-5 border-t border-slate-100 text-center">
+              <div className="border-t border-slate-100" />
+              <div className="text-center -mt-1">
                 <span className="text-[10px] font-mono text-slate-400">
                   Akun demo: admin@izkatech.co.id · izkatech2026
                 </span>
@@ -415,28 +420,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             </form>
           </div>
 
-          {/* Bantuan akun & legal */}
-          <div className="text-center mt-6 space-y-3">
-            <p className="text-xs text-slate-600">
-              Mengalami kendala akun?{' '}
-              <a
-                href={`mailto:${COMPANY_INFO.email}?subject=${encodeURIComponent('Kendala Akun Portal Admin IZKATECH')}`}
-                className="font-semibold text-cyan-700 hover:text-cyan-800 inline-flex items-center gap-1"
-              >
-                <span>Hubungi IT Support</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
+          {/* Legal persis mockup */}
+          <div className="text-center mt-5">
+            <p className="text-[11px] text-slate-500">
+              © {new Date().getFullYear()} PT Ihza Karya Teknologi. All rights reserved.
             </p>
-            <p className="text-[11px] text-slate-400">
-              &copy; {new Date().getFullYear()} PT Ihza Karya Teknologi. All rights reserved.
-            </p>
-            <button
-              onClick={onBackToWebsite}
-              className="inline-flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-cyan-600 transition-colors cursor-pointer"
-            >
-              <ArrowUpRight className="w-3 h-3 rotate-180" />
-              <span>Kembali ke Website Publik</span>
-            </button>
           </div>
         </div>
       </div>

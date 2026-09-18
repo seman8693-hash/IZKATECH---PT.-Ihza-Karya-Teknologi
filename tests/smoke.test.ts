@@ -134,7 +134,7 @@ const loginHtml = renderToStaticMarkup(React.createElement(AdminDashboard, { onB
 check('layar login memuat tombol "Masuk ke Dashboard"', loginHtml.includes('Masuk ke Dashboard'));
 check('layar login memuat field Email & Kata Sandi', loginHtml.includes('nama@izkatech.co.id') && loginHtml.includes('Kata Sandi'));
 check('layar login memuat "Ingat sesi saya" & "Lupa sandi?"', loginHtml.includes('Ingat sesi saya') && loginHtml.includes('Lupa sandi?'));
-check('layar login memuat badge "masuk Admin"', loginHtml.includes('masuk Admin'));
+check('layar login memuat badge "Masuk Admin"', loginHtml.includes('Masuk Admin'));
 check('label "2FA Supported" sudah tidak ada', !loginHtml.includes('2FA Supported'));
 
 const appHtml = renderToStaticMarkup(React.createElement(App));
