@@ -289,39 +289,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
   // -------------------------------------------------------------
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white via-slate-50 to-slate-100 text-slate-800 flex flex-col items-center justify-center px-4 py-10 relative overflow-hidden">
-        {/* Background ambient lighting (brand cyan & orange) */}
-        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[560px] h-[320px] bg-cyan-400/10 blur-[130px] pointer-events-none rounded-full" />
-        <div className="absolute bottom-0 right-0 w-72 h-72 bg-orange-300/10 blur-[110px] pointer-events-none rounded-full" />
+      <div className="min-h-screen bg-slate-900 text-slate-200 flex flex-col items-center justify-center px-4 py-10 relative overflow-hidden">
+        {/* Background ambient lighting — warna cyan identik dashboard */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pointer-events-none" />
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[560px] h-[320px] bg-cyan-500/20 blur-[130px] pointer-events-none rounded-full" />
+        <div className="absolute bottom-0 right-0 w-72 h-72 bg-blue-700/10 blur-[110px] pointer-events-none rounded-full" />
 
         <div className="w-full max-w-md relative z-10">
           {/* Brand Header — logo kiri, nama perusahaan kanan, persis mockup */}
           <div className="flex items-center justify-center gap-3 mb-4">
             <Logo size="lg" showText={false} className="shrink-0" />
             <div className="text-left leading-tight">
-              <div className="text-base font-bold text-slate-900">PT Ihza Karya Teknologi</div>
-              <div className="text-[11px] text-slate-600">Information Communication Technology</div>
-              <div className="text-[11px] font-semibold text-slate-800">System Integrator <span className="text-cyan-600">&amp;</span> Mechanical Electrical</div>
+              <div className="text-base font-bold text-white">PT Ihza Karya Teknologi</div>
+              <div className="text-[11px] text-slate-400">Information Communication Technology</div>
+              <div className="text-[11px] font-semibold text-slate-200">System Integrator <span className="text-cyan-400">&amp;</span> Mechanical Electrical</div>
               <div className="mt-1.5 h-1 w-24 rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400" />
             </div>
           </div>
 
           {/* IZKATECH wordmark di bawah logo */}
           <div className="text-center mb-1.5">
-            <div className="text-lg font-extrabold tracking-wide text-cyan-700 font-display">IZKATECH</div>
-            <div className="text-[9px] font-bold uppercase tracking-widest text-emerald-600">ICT System Integrator</div>
+            <div className="text-lg font-extrabold tracking-wide text-cyan-300 font-display">IZKATECH</div>
+            <div className="text-[9px] font-bold uppercase tracking-widest text-emerald-400">ICT System Integrator</div>
           </div>
 
           {/* Badge mode masuk admin */}
-          <div className="flex justify-center mb-5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm text-slate-500 text-[11px] font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <div className="flex justify-center mb-4">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 shadow-sm text-slate-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
               <span>Masuk Admin</span>
             </span>
           </div>
 
           {/* Card Autentikasi */}
-          <div className="bg-white border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/70 overflow-hidden">
+          <div className="bg-slate-800/80 backdrop-blur border border-slate-700 rounded-3xl shadow-2xl shadow-slate-950/60 overflow-hidden">
             {/* Garis gradien identitas brand */}
             <div className="h-1.5 w-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-600" />
 
