@@ -1,6 +1,7 @@
 ﻿import React, { useState, useMemo } from 'react';
 import { AdminInquiry } from '../types/admin.ts';
 import { COMPANY_INFO } from '../data/companyData.ts';
+import { getBrandSettings } from '../data/adminStore';
 import { X, Printer, Plus, Trash2, FileText, FileSignature } from 'lucide-react';
 import { Logo } from './Logo.tsx';
 
@@ -53,6 +54,10 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
   );
 
   const total = useMemo(() => items.reduce((s, it) => s + it.qty * it.unitPrice, 0), [items]);
+
+  // Identitas brand aktif (diatur dari menu Pengaturan — single source of truth)
+  const brand = getBrandSettings();
+  const brandName = brand.legal.companyName || COMPANY_INFO.name;
 
   const updateItem = (idx: number, patch: Partial<DocItem>) =>
     setItems(items.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
@@ -178,13 +183,31 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
 
           {/* Document Preview (printable) */}
           <div className="lg:col-span-7">
-            <div id="printable-doc" className="bg-white text-slate-900 rounded-xl p-8 text-[11px] leading-relaxed shadow-2xl min-h-[600px]">
+            <div id="printable-doc" className="relative bg-white text-slate-900 rounded-xl p-8 text-[11px] leading-relaxed shadow-2xl min-h-[600px]">
+              {/* Watermark arsip transparan (diatur dari menu Pengaturan) */}
+              {brand.letterhead.showWatermark && (brand.monoLogo || brand.mainLogo) && (
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
+                  style={{ zIndex: -1 }}
+                >
+                  <img
+                    src={brand.monoLogo || brand.mainLogo!}
+                    alt=""
+                    className="w-72 h-72 object-contain"
+                    style={{ opacity: brand.letterhead.watermarkOpacity / 100 }}
+                  />
+                </div>
+              )}
+
               {/* Letterhead */}
               <div className="flex items-start justify-between border-b-4 border-cyan-600 pb-3">
                 <div className="flex items-center gap-3">
-                  <Logo size="sm" variant="cyan-gold" showSubtitle={false} className="shrink-0" />
+                  {brand.letterhead.showHeaderLogo && (
+                    <Logo size="sm" variant="cyan-gold" showSubtitle={false} className="shrink-0" />
+                  )}
                   <div>
-                    <div className="font-bold text-sm tracking-wide">{COMPANY_INFO.name}</div>
+                    <div className="font-bold text-sm tracking-wide">{brandName}</div>
                     <div className="text-[10px] text-slate-600">{COMPANY_INFO.subheading}</div>
                     <div className="text-[9px] text-slate-500">{COMPANY_INFO.address} â€¢ {COMPANY_INFO.phoneLandline} â€¢ {COMPANY_INFO.website}</div>
                   </div>
@@ -214,7 +237,7 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
                   <p className="mt-3">{docType === 'INVOICE' ? 'Dengan hormat, berikut adalah rincian tagihan / invoice pembayaran untuk pekerjaan berikut:' : 'Dengan hormat,'}</p>
                   {docType === 'SPH' && (
                     <p className="mt-1">
-                      Bersama surat ini, kami <strong>{COMPANY_INFO.name}</strong> bermaksud mengajukan penawaran harga untuk:{' '}
+                      Bersama surat ini, kami <strong>{brandName}</strong> bermaksud mengajukan penawaran harga untuk:{' '}
                       <strong>{subject}</strong>. Rincian penawaran sebagai berikut:
                     </p>
                   )}
@@ -258,10 +281,12 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
                   <div className="mt-2 grid grid-cols-2 gap-4 text-[10px]">
                     <div className="border border-slate-400 rounded-lg p-2.5">
                       <div className="flex items-center gap-2 mb-1">
-                        <Logo size="sm" variant="cyan-gold" showSubtitle={false} className="shrink-0" />
+                        {brand.letterhead.showHeaderLogo && (
+                          <Logo size="sm" variant="cyan-gold" showSubtitle={false} className="shrink-0" />
+                        )}
                         <div className="font-bold text-[11px]">PIHAK PERTAMA</div>
                       </div>
-                      <div>{COMPANY_INFO.name}</div>
+                      <div>{brandName}</div>
                       <div className="text-slate-600">{COMPANY_INFO.address}</div>
                     </div>
                     <div className="border border-slate-400 rounded-lg p-2.5">
@@ -286,7 +311,7 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
                   <div>{docType === 'SPH' ? 'Bandung, ' : ''}{docDate}</div>
                   <div>{docType === 'SPH' ? 'Hormat kami,' : 'PIHAK PERTAMA'}</div>
                   <div className="h-14" />
-                  <div className="font-bold underline">{COMPANY_INFO.name}</div>
+                  <div className="font-bold underline">{brandName}</div>
                 </div>
               </div>
             </div>

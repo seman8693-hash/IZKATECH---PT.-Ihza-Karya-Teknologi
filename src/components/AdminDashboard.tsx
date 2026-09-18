@@ -25,6 +25,7 @@ import { AddInquiryModal } from './dashboard/AddInquiryModal.tsx';
 import { AdminSidebar, AdminTab } from './dashboard/AdminSidebar.tsx';
 import { StatsCard } from './dashboard/StatsCard.tsx';
 import { ProjectFormModal } from './dashboard/ProjectFormModal.tsx';
+import { SettingsTab } from './dashboard/SettingsTab.tsx';
 import { 
   Lock, 
   LogOut, 
@@ -956,6 +957,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             />
           </div>
         )}
+
+        {/* -------------------------------------------------------------
+            TAB 5: PENGATURAN LOGO & IDENTITAS BRAND (single source of truth)
+            ------------------------------------------------------------- */}
+        {currentTab === 'settings' && <SettingsTab />}
 
         </main>
       </div>

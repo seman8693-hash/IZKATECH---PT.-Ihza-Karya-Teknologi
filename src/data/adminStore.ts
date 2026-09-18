@@ -545,6 +545,140 @@ export const removeCustomLogo = () => {
 };
 
 // -------------------------------------------------------------
+// BRAND IDENTITY STORE (Single Source of Truth identitas visual)
+// Kelola logo utama, favicon, stempel monokrom, palet warna,
+// legalitas/tagline, serta opsi kop surat & watermark dokumen.
+// -------------------------------------------------------------
+export interface BrandPalette {
+  primary: string;
+  navy: string;
+  accent: string;
+  dark: string;
+}
+
+export interface BrandLegal {
+  companyName: string;
+  brandName: string;
+  domain: string;
+  subdomain: string;
+  tagline: string;
+  subBrand1: string;
+  subBrand2: string;
+}
+
+export interface BrandLetterhead {
+  /** Tampilkan logo di kop dokumen SPH / PKS / Invoice */
+  showHeaderLogo: boolean;
+  /** Tampilkan watermark transparan di badan dokumen */
+  showWatermark: boolean;
+  /** Opasitas watermark 0-100 (persen) */
+  watermarkOpacity: number;
+}
+
+export interface BrandSettings {
+  /** Logo utama horizontal landscape (data URL) — dipakai website, dashboard & dokumen */
+  mainLogo: string | null;
+  /** Icon square 1:1 untuk favicon browser */
+  favicon: string | null;
+  /** Versi monokrom 1:1 untuk stempel / watermark dokumen */
+  monoLogo: string | null;
+  colors: BrandPalette;
+  legal: BrandLegal;
+  letterhead: BrandLetterhead;
+}
+
+export const defaultBrandSettings = (): BrandSettings => ({
+  mainLogo: null,
+  favicon: null,
+  monoLogo: null,
+  colors: {
+    primary: '#06B6D4',
+    navy: '#0E3A5D',
+    accent: '#10B981',
+    dark: '#1E293B',
+  },
+  legal: {
+    companyName: 'PT Ihza Karya Teknologi',
+    brandName: 'IZKATECH',
+    domain: 'izkatech.co.id',
+    subdomain: 'sph.izkatech.co.id',
+    tagline: 'Information Communication Technology',
+    subBrand1: 'System Integrator',
+    subBrand2: 'System Integrator & Mechanical Electrical',
+  },
+  letterhead: {
+    showHeaderLogo: true,
+    showWatermark: false,
+    watermarkOpacity: 15,
+  },
+});
+
+const BRAND_SETTINGS_KEY = 'izkatech_brand_settings';
+
+export const getBrandSettings = (): BrandSettings => {
+  try {
+    const raw = localStorage.getItem(BRAND_SETTINGS_KEY);
+    if (!raw) {
+      // Belum ada konfigurasi: warisi logo kustom lama (jika pernah diunggah)
+      const seeded = defaultBrandSettings();
+      seeded.mainLogo = getCustomLogo();
+      return seeded;
+    }
+    const parsed = JSON.parse(raw) as Partial<BrandSettings>;
+    return {
+      ...defaultBrandSettings(),
+      ...parsed,
+      colors: { ...defaultBrandSettings().colors, ...(parsed.colors || {}) },
+      legal: { ...defaultBrandSettings().legal, ...(parsed.legal || {}) },
+      letterhead: { ...defaultBrandSettings().letterhead, ...(parsed.letterhead || {}) },
+    };
+  } catch {
+    const seeded = defaultBrandSettings();
+    seeded.mainLogo = getCustomLogo();
+    return seeded;
+  }
+};
+
+export const saveBrandSettings = (settings: BrandSettings) => {
+  try {
+    localStorage.setItem(BRAND_SETTINGS_KEY, JSON.stringify(settings));
+    // Back-compat: sinkronkan logo utama ke key lama agar Logo component
+    // (navbar, sidebar, login, dokumen) otomatis mengikuti lewat event.
+    if (settings.mainLogo) {
+      localStorage.setItem(CUSTOM_LOGO_KEY, settings.mainLogo);
+    } else {
+      localStorage.removeItem(CUSTOM_LOGO_KEY);
+    }
+    window.dispatchEvent(new Event('izkatech_logo_updated'));
+    window.dispatchEvent(new Event('izkatech_brand_updated'));
+  } catch (e) {
+    console.error('Gagal menyimpan pengaturan brand:', e);
+  }
+};
+
+/** Pasang favicon browser dari pengaturan brand (panggil saat boot & saat berubah). */
+export const applyBrandFavicon = () => {
+  try {
+    const href = getBrandSettings().favicon;
+    let link = document.querySelector<HTMLLinkElement>('link#izkatech-favicon');
+    if (!href) {
+      if (link) link.remove();
+      return;
+    }
+    if (!link) {
+      link = document.createElement('link');
+      link.id = 'izkatech-favicon';
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.type = 'image/png';
+    link.href = href;
+  } catch {
+    /* environment tanpa DOM — abaikan */
+  }
+};
+
+// -------------------------------------------------------------
 // LIVE CHAT & CRM SYSTEM STORE
 // -------------------------------------------------------------
 const INITIAL_CHAT_SESSIONS: ChatSession[] = [

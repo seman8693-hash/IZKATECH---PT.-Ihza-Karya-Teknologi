@@ -17,6 +17,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import App from '../src/App.tsx';
 import { AdminDashboard } from '../src/components/AdminDashboard.tsx';
+import { SettingsTab } from '../src/components/dashboard/SettingsTab.tsx';
 import {
   SECTOR_META,
   checkAdminAuth,
@@ -141,6 +142,24 @@ const appHtml = renderToStaticMarkup(React.createElement(App));
 check('halaman publik ter-render (konten besar)', appHtml.length > 5000, appHtml.length);
 check('tombol Live Chat ada di navbar', appHtml.includes('Live Chat'));
 check('konten utama website ter-render', appHtml.includes('IZKATECH') && appHtml.includes('WhatsApp'));
+
+const settingsHtml = renderToStaticMarkup(React.createElement(SettingsTab));
+check(
+  'halaman Pengaturan Logo & Identitas Brand ter-render lengkap',
+  settingsHtml.includes('Pengaturan Logo &amp; Identitas Brand') &&
+    settingsHtml.includes('Logo Utama (Horizontal Landscape)') &&
+    settingsHtml.includes('Icon &amp; Favicon') &&
+    settingsHtml.includes('Versi Monokrom (Stempel)') &&
+    settingsHtml.includes('Palet Warna Brand Resmi') &&
+    settingsHtml.includes('Legalitas &amp; Tagline Entitas') &&
+    settingsHtml.includes('Pengaturan Kop Surat &amp; Watermark') &&
+    settingsHtml.includes('Default Header Dokumen'),
+  { len: settingsHtml.length }
+);
+check(
+  'opsi kop surat & watermark tersedia di pengaturan',
+  settingsHtml.includes('Logo Header SPK/Invoice') && settingsHtml.includes('Opacity Watermark')
+);
 
 // ---------------------------------------------------------------- ringkasan
 console.log('\n---------------------------------------------');
