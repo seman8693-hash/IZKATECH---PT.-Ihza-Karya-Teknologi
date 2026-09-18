@@ -23,6 +23,7 @@ import { ChatCRMTab } from './ChatCRMTab.tsx';
 import { DocumentGeneratorModal } from './DocumentGeneratorModal.tsx';
 import { AdminSidebar, AdminTab } from './dashboard/AdminSidebar.tsx';
 import { StatsCard } from './dashboard/StatsCard.tsx';
+import { ProjectFormModal } from './dashboard/ProjectFormModal.tsx';
 import { 
   ShieldCheck, 
   Lock, 
@@ -59,7 +60,8 @@ import {
   Users,
   Archive,
   Check,
-  Menu
+  Menu,
+  MapPin
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -695,364 +697,59 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
           </div>
         )}
 
-        {currentTab === 'projects' && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-bold text-slate-900 font-display">Manajemen Proyek Portofolio</h2>
-              <p className="text-xs text-slate-500">{projects.length} proyek terdaftar.</p>
-            </div>
-            <button
-              onClick={handleOpenCreateProject}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-white hover:bg-cyan-600 text-xs font-bold transition-all shadow-md cursor-pointer shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah Proyek Baru</span>
-            </button>
-          </div>
-        )}
-
-        {currentTab === 'services' && (
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 font-display">Katalog Layanan &amp; Brand</h2>
-            <p className="text-xs text-slate-500">Referensi lingkup pekerjaan &amp; prinsipal yang ditawarkan ke klien.</p>
-          </div>
-        )}
-
-        {currentTab === 'chat' && (
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 font-display">Live Chat CRM</h2>
-            <p className="text-xs text-slate-500">Balas pertanyaan pengunjung secara real-time.</p>
-          </div>
-        )}
-
-        {/* -------------------------------------------------------------
-            TAB 1: INQUIRIES & LEADS MANAGEMENT
-            ------------------------------------------------------------- */}
-        {currentTab === 'inquiries' && (
-          <div className="space-y-6">
-            {/* Search and Filter Controls */}
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <div className="relative flex-1 w-full">
-                <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Cari nama klien, instansi, nomor telepon, atau catatan..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-cyan-400"
-                />
-              </div>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <Filter className="w-4 h-4 text-slate-500 shrink-0" />
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full sm:w-48 px-3 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-600 focus:outline-none focus:border-cyan-400"
-                >
-                  <option value="all">Semua Status</option>
-                  <option value="new">Baru (Belum Dihubungi)</option>
-                  <option value="contacted">Sedang Dihubungi</option>
-                  <option value="survey">Survei Teknis / BoQ</option>
-                  <option value="deal">Deal / SPK</option>
-                </select>
-              </div>
+                {currentTab === 'projects' && (
+          <div className="space-y-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-slate-500">Total {projects.length} proyek</span>
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Selesai {projects.filter(p => p.status === 'completed').length}</span>
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">On Going {projects.filter(p => p.status === 'in_progress').length}</span>
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">Tender {projects.filter(p => p.status === 'tender').length}</span>
             </div>
 
-            {/* Inquiries Table / List */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* Table Column */}
-              <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xl">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 text-slate-500 font-mono border-b border-slate-200">
-                      <tr>
-                        <th className="p-3.5">ID / TANGGAL</th>
-                        <th className="p-3.5">KLIEN &amp; PERUSAHAAN</th>
-                        <th className="p-3.5">LAYANAN</th>
-                        <th className="p-3.5">STATUS</th>
-                        <th className="p-3.5 text-right">AKSI</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      {filteredInquiries.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="p-8 text-center text-slate-500">
-                            Tidak ditemukan data prospek sesuai pencarian.
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredInquiries.map((item) => (
-                          <tr 
-                            key={item.id}
-                            onClick={() => setSelectedInquiry(item)}
-                            className={`cursor-pointer transition-colors ${
-                              selectedInquiry?.id === item.id 
-                                ? 'bg-cyan-50' 
-                                : 'hover:bg-slate-100'
-                            }`}
-                          >
-                            <td className="p-3.5 font-mono">
-                              <div className="font-semibold text-cyan-600">{item.id}</div>
-                              <div className="text-[10px] text-slate-500">{item.timestamp}</div>
-                            </td>
-                            <td className="p-3.5">
-                              <div className="font-bold text-slate-900 text-sm">{item.clientName}</div>
-                              <div className="text-slate-500 flex items-center gap-1 mt-0.5">
-                                <Building2 className="w-3 h-3 text-slate-500" />
-                                <span>{item.companyName}</span>
-                              </div>
-                            </td>
-                            <td className="p-3.5 max-w-[200px]">
-                              <div className="text-slate-600 truncate font-medium">
-                                {item.serviceInterest[0]}
-                              </div>
-                              {item.serviceInterest.length > 1 && (
-                                <div className="text-[10px] text-cyan-600 font-mono">
-                                  +{item.serviceInterest.length - 1} layanan lainnya
-                                </div>
-                              )}
-                            </td>
-                            <td className="p-3.5">
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
-                                item.status === 'new' 
-                                  ? 'bg-amber-500/20 text-amber-700 border border-amber-500/30' 
-                                  : item.status === 'contacted'
-                                  ? 'bg-blue-500/20 text-blue-700 border border-blue-500/30'
-                                  : item.status === 'survey'
-                                  ? 'bg-purple-500/20 text-purple-700 border border-purple-500/30'
-                                  : 'bg-emerald-500/20 text-emerald-700 border border-emerald-500/30'
-                              }`}>
-                                {item.status}
-                              </span>
-                            </td>
-                            <td className="p-3.5 text-right" onClick={(e) => e.stopPropagation()}>
-                              <div className="flex items-center justify-end gap-1.5">
-                                <button
-                                  onClick={() => handleOpenEditInquiry(item)}
-                                  className="p-1.5 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 transition-colors cursor-pointer"
-                                  title="Edit Data Klien / Prospek"
-                                >
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </button>
-                                <a
-                                  href={`https://wa.me/${item.phone.replace(/[^0-9]/g, '')}?text=Halo%20${encodeURIComponent(item.clientName)},%20kami%20dari%20PT.%20Ihza%20Karya%20Teknologi%20menindaklanjuti%20permintaan%20penawaran%20Anda.`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="p-1.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 transition-colors"
-                                  title="WhatsApp Klien"
-                                >
-                                  <Phone className="w-3.5 h-3.5" />
-                                </a>
-                                <button
-                                  onClick={() => handleDeleteInquiry(item.id)}
-                                  className="p-1.5 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 transition-colors cursor-pointer"
-                                  title="Hapus"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Inquiry Detail Drawer / Preview */}
-              <div className="lg:col-span-4">
-                {selectedInquiry ? (
-                  <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-5 shadow-2xl sticky top-24">
-                    <div className="flex items-start justify-between border-b border-slate-200 pb-3">
-                      <div>
-                        <div className="text-[10px] font-mono text-cyan-600 font-semibold uppercase">
-                          DETAIL PROSPEK
-                        </div>
-                        <h3 className="text-base font-bold text-slate-900 mt-0.5">
-                          {selectedInquiry.clientName}
-                        </h3>
-                        <p className="text-xs text-slate-500">{selectedInquiry.companyName}</p>
-                      </div>
-                      <span className="text-xs font-mono text-slate-500">
-                        {selectedInquiry.id}
-                      </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              {projects.map((proj) => (
+                <div key={proj.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:border-cyan-300 transition-all flex flex-col group">
+                  <div className="relative h-40 overflow-hidden">
+                    <img src={proj.image} alt={proj.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-transparent" />
+                    <span className="absolute top-2.5 left-2.5 text-[10px] font-semibold text-white bg-cyan-500/85 px-2 py-0.5 rounded-lg backdrop-blur">{proj.sectorLabel}</span>
+                    <span className={`absolute top-2.5 right-2.5 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full backdrop-blur ${proj.status === 'completed' ? 'bg-emerald-500/85 text-white' : 'bg-amber-500/90 text-white'}`}>{proj.status === 'completed' ? 'SELESAI' : proj.status === 'tender' ? 'TENDER' : 'ON GOING'}</span>
+                  </div>
+                  <div className="p-4 space-y-2 flex-1 flex flex-col">
+                    <h4 className="font-bold text-slate-900 text-sm leading-snug">{proj.title}</h4>
+                    <div className="text-xs text-cyan-700 font-semibold">{proj.clientName}</div>
+                    <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                      <MapPin className="w-3 h-3 shrink-0" /> <span className="truncate">{proj.location || '-'} • {proj.year}</span>
                     </div>
-
-                    {/* Quick Contact Buttons */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <a
-                        href={`https://wa.me/${selectedInquiry.phone.replace(/[^0-9]/g, '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-700 border border-emerald-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
-                      >
-                        <Phone className="w-3.5 h-3.5" />
-                        <span>Chat WhatsApp</span>
-                      </a>
-                      <a
-                        href={`mailto:${selectedInquiry.email}`}
-                        className="py-2 px-3 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-700 border border-cyan-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
-                      >
-                        <Mail className="w-3.5 h-3.5" />
-                        <span>Kirim Email</span>
-                      </a>
-                    </div>
-
-                    {/* Document Generator Buttons (SPH / PKS) */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-slate-500 font-mono">DOKUMEN PENAWARAN:</label>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        <button
-                          onClick={() => openDocGenerator(selectedInquiry, 'SPH')}
-                          className="py-2 px-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-blue-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                          title="Buat Surat Penawaran Harga"
-                        >
-                          <FileText className="w-3.5 h-3.5" />
-                          <span>Buat SPH</span>
-                        </button>
-                        <button
-                          onClick={() => openDocGenerator(selectedInquiry, 'PKS')}
-                          className="py-2 px-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-700 border border-purple-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                          title="Buat Perjanjian Kerja Sama"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Buat PKS</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Status Changer */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-slate-500 font-mono">STATUS PROSPEK:</label>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        {(['new', 'contacted', 'survey', 'deal'] as const).map((st) => (
-                          <button
-                            key={st}
-                            onClick={() => handleStatusChange(selectedInquiry.id, st)}
-                            className={`py-1.5 px-2 rounded-lg text-xs font-mono uppercase transition-all cursor-pointer ${
-                              selectedInquiry.status === st
-                                ? 'bg-cyan-500 text-slate-950 font-bold shadow'
-                                : 'bg-slate-50 text-slate-500 hover:text-slate-900 border border-slate-200'
-                            }`}
-                          >
-                            {st}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Services Requested */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-slate-500 font-mono">LAYANAN TERPILIH:</label>
-                      <div className="space-y-1">
-                        {selectedInquiry.serviceInterest.map((s, idx) => (
-                          <div key={idx} className="flex items-center gap-2 text-xs text-slate-700 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                            <span>{s}</span>
+                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">{proj.description}</p>
+                    {(proj.highlights || []).length > 0 && (
+                      <div className="pt-1 space-y-1">
+                        {proj.highlights!.slice(0, 2).map((h, i) => (
+                          <div key={i} className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                            <span className="w-1 h-1 rounded-full bg-cyan-500 shrink-0" />
+                            <span className="truncate">{h}</span>
                           </div>
                         ))}
                       </div>
-                    </div>
-
-                    {/* Scale & Notes */}
-                    <div className="space-y-1 text-xs">
-                      <div className="text-slate-500 font-mono">CATATAN SPESIFIKASI:</div>
-                      <div className="p-3 rounded-xl bg-slate-50 text-slate-600 border border-slate-200 leading-relaxed font-sans whitespace-pre-wrap">
-                        {selectedInquiry.notes || 'Tidak ada catatan tambahan.'}
+                    )}
+                    <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <span className="text-[10px] font-mono text-slate-400 truncate">{proj.id}{proj.valueApprox ? ` • ${proj.valueApprox}` : ''}</span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button onClick={() => handleOpenEditProject(proj)} className="text-cyan-600 hover:bg-cyan-50 p-1.5 rounded-lg cursor-pointer transition-colors" title="Edit Proyek (gambar & detail katalog)"><Pencil className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => handleDeleteProject(proj.id)} className="text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg cursor-pointer transition-colors" title="Hapus"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>
-                    </div>
-
-                    {/* Action Buttons in Detail Drawer */}
-                    <div className="pt-3 border-t border-slate-200 flex items-center justify-between gap-2">
-                      <button
-                        onClick={() => handleDeleteInquiry(selectedInquiry.id)}
-                        className="py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-500/20 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                        title="Hapus Prospek"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Hapus</span>
-                      </button>
-
-                      <button
-                        onClick={() => handleOpenEditInquiry(selectedInquiry)}
-                        className="py-2 px-4 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-700 border border-cyan-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                        <span>Edit Data Klien</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-white border border-slate-200 border-dashed rounded-2xl p-8 text-center text-slate-500 text-xs">
-                    <Eye className="w-6 h-6 mx-auto mb-2 text-slate-600" />
-                    Pilih salah satu baris prospek di tabel untuk melihat detail dan mengubah status penanganan.
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* -------------------------------------------------------------
-            TAB 2: PROJECT PORTFOLIO MANAGEMENT
-            ------------------------------------------------------------- */}
-        {currentTab === 'projects' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {projects.map((proj) => (
-                <div key={proj.id} className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3 flex flex-col justify-between hover:border-cyan-500/40 transition-colors shadow-lg">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-600 border border-cyan-500/20">
-                        {proj.id}
-                      </span>
-                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full uppercase ${
-                        proj.status === 'completed'
-                          ? 'bg-emerald-500/20 text-emerald-700 border border-emerald-500/30'
-                          : 'bg-amber-500/20 text-amber-700 border border-amber-500/30'
-                      }`}>
-                        {proj.status === 'completed' ? 'SELESAI' : 'ON GOING'}
-                      </span>
-                    </div>
-                    <h4 className="font-bold text-slate-900 text-sm sm:text-base leading-snug">
-                      {proj.title}
-                    </h4>
-                    <div className="text-xs text-cyan-700 font-medium">
-                      {proj.clientName}
-                    </div>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      {proj.description}
-                    </p>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-                    <span>Tahun: {proj.year}</span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleOpenEditProject(proj)}
-                        className="text-cyan-600 hover:text-cyan-700 p-1.5 rounded hover:bg-cyan-500/10 transition-colors cursor-pointer"
-                        title="Edit Proyek"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProject(proj.id)}
-                        className="text-rose-600 hover:text-rose-700 p-1.5 rounded hover:bg-rose-500/10 transition-colors cursor-pointer"
-                        title="Hapus Proyek"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
+            {projects.length === 0 && (
+              <div className="p-10 text-center bg-white border border-dashed border-slate-300 rounded-2xl text-slate-400 text-xs">
+                Belum ada proyek. Klik "Tambah Proyek Baru" untuk memulai membangun portofolio.
+              </div>
+            )}
           </div>
-        )}
-
-        {/* -------------------------------------------------------------
+        )}{/* -------------------------------------------------------------
             TAB 3: SERVICES & BRAND ECOSYSTEM OVERVIEW
             ------------------------------------------------------------- */}
         {currentTab === 'services' && (
@@ -1129,121 +826,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
         </main>
       </div>
 
-      {/* -------------------------------------------------------------
-          ADD / EDIT PROJECT MODAL
+            {/* -------------------------------------------------------------
+          PROJECT PORTFOLIO FORM MODAL (upload gambar & detail katalog)
           ------------------------------------------------------------- */}
       {isAddProjectModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white backdrop-blur-sm">
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <h3 className="text-base font-bold text-slate-900 font-display">
-                {editingProject ? `Edit Proyek (${editingProject.id})` : 'Tambah Proyek Portofolio Baru'}
-              </h3>
-              <button
-                onClick={() => {
-                  setIsAddProjectModalOpen(false);
-                  setEditingProject(null);
-                }}
-                className="text-slate-500 hover:text-slate-900 text-xs font-mono cursor-pointer"
-              >
-                TUTUP
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveProjectForm} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-600 mb-1 font-semibold">Judul Proyek</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Instalasi CCTV AI & Network Data Center"
-                  value={newProject.title}
-                  onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-cyan-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-600 mb-1 font-semibold">Nama Klien / Instansi</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: PT. PLN Nusantara Power"
-                  value={newProject.clientName}
-                  onChange={(e) => setNewProject({ ...newProject, clientName: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-cyan-400"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-600 mb-1 font-semibold">Tahun</label>
-                  <input
-                    type="text"
-                    value={newProject.year}
-                    onChange={(e) => setNewProject({ ...newProject, year: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-cyan-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-600 mb-1 font-semibold">Status</label>
-                  <select
-                    value={newProject.status}
-                    onChange={(e) => setNewProject({ ...newProject, status: e.target.value as any })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-cyan-400"
-                  >
-                    <option value="in_progress">Dalam Pengerjaan</option>
-                    <option value="completed">Selesai</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-600 mb-1 font-semibold">Estimasi Nilai Kontrak (Opsional)</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Rp 350.000.000"
-                  value={newProject.valueApprox || ''}
-                  onChange={(e) => setNewProject({ ...newProject, valueApprox: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-cyan-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-600 mb-1 font-semibold">Deskripsi Pengerjaan</label>
-                <textarea
-                  rows={3}
-                  placeholder="Spesifikasi teknis, merek perangkat, dan titik instalasi..."
-                  value={newProject.description}
-                  onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-cyan-400"
-                />
-              </div>
-
-              <div className="pt-3 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsAddProjectModalOpen(false);
-                    setEditingProject(null);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-slate-200 text-slate-600 hover:text-slate-900 cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold hover:bg-cyan-400 shadow-md cursor-pointer"
-                >
-                  {editingProject ? 'Simpan Perubahan' : 'Simpan Proyek'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <ProjectFormModal
+          project={editingProject}
+          onClose={() => { setIsAddProjectModalOpen(false); setEditingProject(null); }}
+          onSave={(p) => {
+            if (editingProject) {
+              setProjects(updateProject(p));
+            } else {
+              saveProject(p);
+              setProjects(getStoredProjects());
+            }
+            setIsAddProjectModalOpen(false);
+            setEditingProject(null);
+          }}
+        />
       )}
-
-      {/* -------------------------------------------------------------
+{/* -------------------------------------------------------------
           EDIT INQUIRY / LEAD MODAL
           ------------------------------------------------------------- */}
       {editingInquiry && (

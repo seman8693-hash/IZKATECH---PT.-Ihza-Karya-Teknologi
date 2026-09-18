@@ -23,6 +23,19 @@ export interface AdminProject {
   status: 'completed' | 'in_progress' | 'tender';
   valueApprox?: string;
   description: string;
+  /** Foto dokumentasi proyek (base64 data URL, di-resize otomatis) */
+  image?: string;
+  /** Lokasi (kota/provinsi) sesuai format katalog */
+  location?: string;
+  city?: string;
+  /** Kunci sektor katalog: commercial | education | infrastructure | hospitality | government | healthcare */
+  sector?: string;
+  /** Label sektor yang tampil di kartu, mis. 'Gedung Perkantoran' */
+  sectorLabel?: string;
+  /** Keterangan detail lengkap proyek (paragraf panjang) */
+  details?: string;
+  /** Poin-poin unggulan / lingkup pekerjaan */
+  highlights?: string[];
 }
 
 export interface AdminNotification {

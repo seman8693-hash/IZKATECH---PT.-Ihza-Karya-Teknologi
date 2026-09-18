@@ -69,6 +69,47 @@ const INITIAL_INQUIRIES: AdminInquiry[] = [
   },
 ];
 
+// -------------------------------------------------------------
+// PORTFOLIO CATALOG HELPERS (sector palette & placeholder image)
+// -------------------------------------------------------------
+export const SECTOR_META: Record<string, { label: string; grad: [string, string] }> = {
+  commercial: { label: 'Perkantoran & Finansial', grad: ['#0369a1', '#38bdf8'] },
+  education: { label: 'Pendidikan & Kampus', grad: ['#6d28d9', '#a78bfa'] },
+  infrastructure: { label: 'Infrastruktur & Transportasi', grad: ['#047857', '#34d399'] },
+  hospitality: { label: 'Perhotelan & Pariwisata', grad: ['#b45309', '#fbbf24'] },
+  government: { label: 'Pemerintahan', grad: ['#b91c1c', '#f87171'] },
+  healthcare: { label: 'R&D Farmasi & Medis', grad: ['#0e7490', '#67e8f9'] },
+};
+
+export const sectorPlaceholderImage = (sector?: string, label?: string): string => {
+  const meta = SECTOR_META[sector || 'commercial'] || SECTOR_META.commercial;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='360'>
+    <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+      <stop offset='0' stop-color='${meta.grad[0]}'/><stop offset='1' stop-color='${meta.grad[1]}'/>
+    </linearGradient></defs>
+    <rect width='640' height='360' fill='url(#g)'/>
+    <g fill='rgba(255,255,255,0.88)'>
+      <rect x='72' y='170' width='86' height='120' rx='5'/>
+      <rect x='176' y='128' width='104' height='162' rx='5'/>
+      <rect x='298' y='84' width='126' height='206' rx='5'/>
+      <rect x='442' y='140' width='96' height='150' rx='5'/>
+    </g>
+    <text x='320' y='326' text-anchor='middle' font-family='Arial, Helvetica, sans-serif' font-size='21' font-weight='bold' fill='rgba(255,255,255,0.96)'>${label || 'PROYEK IZKATECH'}</text>
+  </svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+};
+
+const normalizeProject = (p: AdminProject): AdminProject => ({
+  ...p,
+  image: p.image || sectorPlaceholderImage(p.sector, p.sectorLabel),
+  location: p.location || 'Indonesia',
+  city: p.city || 'Nasional',
+  sector: p.sector || 'commercial',
+  sectorLabel: p.sectorLabel || p.category,
+  details: p.details || p.description,
+  highlights: p.highlights || [],
+});
+
 const INITIAL_PROJECTS: AdminProject[] = [
   {
     id: 'PRJ-01',
@@ -79,6 +120,17 @@ const INITIAL_PROJECTS: AdminProject[] = [
     status: 'completed',
     valueApprox: 'Rp 850.000.000',
     description: 'Pemasangan cabling Cat6A LSZH, server rack 42U, Precision Cooling AC, dan patch panel fiber optik LC duplex.',
+    location: 'Bandung, Jawa Barat',
+    city: 'Bandung',
+    sector: 'commercial',
+    sectorLabel: 'Data Center Enterprise',
+    details: 'Modernisasi menyeluruh fasilitas data center perusahaan telekomunikasi: perancangan layout ruang server, pemasangan cabling struktur Cat6A LSZH dan backbone fiber optic 10Gbps, instalasi server rack 42U dengan manajemen kabel, sistem Precision Cooling untuk stabilitas termal, serta pengujian komprehensif (test & commissioning) sebelum serah terima.',
+    highlights: [
+      'Backbone fiber optic 10Gbps full redundancy',
+      'Server rack 42U dengan manajemen kabel vertikal',
+      'Precision Cooling AC ruang server',
+      'Test & commissioning dengan laporan serah terima',
+    ],
   },
   {
     id: 'PRJ-02',
@@ -89,6 +141,17 @@ const INITIAL_PROJECTS: AdminProject[] = [
     status: 'completed',
     valueApprox: 'Rp 1.450.000.000',
     description: 'Instalasi 120+ unit kamera IP dome & PTZ zoom 32x terpusat di Video Wall Control Room Bandara.',
+    location: 'Kertajati, Jawa Barat',
+    city: 'Majalengka',
+    sector: 'infrastructure',
+    sectorLabel: 'Bandara & Transportasi',
+    details: 'Implementasi sistem pengawasan area landside & airside Bandara Internasional Kertajati dengan 120+ unit kamera IP Hikvision (dome, bullet, dan PTZ zoom 32x) berbasis AI — face recognition, ANPR di gerbang kendaraan, serta integrasi video wall 3x3 di control room untuk monitoring real-time 24/7.',
+    highlights: [
+      '120+ kamera IP AI (dome, bullet, PTZ 32x)',
+      'Face recognition & ANPR terintegrasi',
+      'Video wall 3x3 di control room',
+      'Storage NVR redundan 30 hari rekaman',
+    ],
   },
   {
     id: 'PRJ-03',
@@ -99,6 +162,17 @@ const INITIAL_PROJECTS: AdminProject[] = [
     status: 'in_progress',
     valueApprox: 'Rp 620.000.000',
     description: 'Penerapan SD-WAN terenkripsi, IPS/IDS protection, dan VPN secure gateway untuk 18 kantor cabang.',
+    location: 'Jawa Barat',
+    city: 'Nasional',
+    sector: 'commercial',
+    sectorLabel: 'Perbankan & Finansial',
+    details: 'Penerapan arsitektur keamanan jaringan high-availability untuk 18 kantor cabang BPR: cluster firewall FortiGate mode HA aktif-pasif, SD-WAN terenkripsi antar cabang, IPS/IDS protection, segmentasi VLAN per departemen, serta VPN secure gateway untuk akses remote karyawan.',
+    highlights: [
+      'Cluster FortiGate HA aktif-pasif',
+      'SD-WAN terenkripsi 18 kantor cabang',
+      'IPS/IDS + segmentasi VLAN internal',
+      'VPN secure gateway untuk akses remote',
+    ],
   },
   {
     id: 'PRJ-04',
@@ -109,6 +183,157 @@ const INITIAL_PROJECTS: AdminProject[] = [
     status: 'in_progress',
     valueApprox: 'Rp 390.000.000',
     description: 'Integrasi flap barrier gate dengan pembaca kartu RFID dan software monitoring absensi real-time.',
+    location: 'Bandung, Jawa Barat',
+    city: 'Bandung',
+    sector: 'commercial',
+    sectorLabel: 'Gedung Perkantoran',
+    details: 'Sistem akses kontrol lobi utama Menara Asia: speed gate turnstile flap barrier dua arah, pembaca kartu RFID HID Global multi-format, integrasi dengan software manajemen absensi & visitor management real-time, serta proteksi anti-tailgating dan fail-safe saat emergency.',
+    highlights: [
+      'Speed gate turnstile flap barrier dua arah',
+      'Pembaca RFID HID Global multi-format',
+      'Visitor management & absensi real-time',
+      'Fail-safe release saat emergency',
+    ],
+  },
+  {
+    id: 'PRJ-05',
+    title: 'R&D Center PT. Mensa Mitra Medika',
+    clientName: 'PT. Mensa Mitra Medika',
+    category: 'Data Center & Network Infrastructure',
+    year: '2026',
+    status: 'in_progress',
+    valueApprox: 'Estimasi Tender',
+    description: 'Pembangunan infrastruktur jaringan data, sistem keamanan terintegrasi, dan utilitas instalasi kelistrikan ruang laboratorium R&D.',
+    location: 'Indonesia',
+    city: 'Nasional',
+    sector: 'healthcare',
+    sectorLabel: 'R&D & Farmasi',
+    details: 'Pembangunan infrastruktur jaringan data laboratorium riset & pengembangan farmasi: struktur cabling data, sistem keamanan terintegrasi (CCTV & access control area terbatas), serta utilitas instalasi kelistrikan dan grounding khusus peralatan laboratorium presisi.',
+    highlights: [
+      'Struktur cabling data laboratorium',
+      'Access control area terbatas & CCTV',
+      'Grounding khusus peralatan presisi',
+    ],
+  },
+  {
+    id: 'PRJ-06',
+    title: 'Beltway Office Tower',
+    clientName: 'Pengelola Beltway Office Tower',
+    category: 'Surveillance (CCTV Systems)',
+    year: '2025',
+    status: 'completed',
+    valueApprox: 'Rp 500.000.000+',
+    description: 'Instalasi jaringan backbone komunikasi, pengawasan CCTV terpusat, dan sistem akses kontrol pintu perkantoran premium.',
+    location: 'Jakarta',
+    city: 'Jakarta Selatan',
+    sector: 'commercial',
+    sectorLabel: 'Gedung Perkantoran',
+    details: 'Pekerjaan infrastruktur teknologi gedung perkantoran premium 20 lantai: backbone jaringan komunikasi antar lantai, sistem pengawasan CCTV terpusat di ruang security, akses kontrol pintu area premium, serta integrasi sistem ke building management.',
+    highlights: [
+      'Backbone jaringan 20 lantai',
+      'CCTV terpusat ruang security',
+      'Akses kontrol area premium',
+    ],
+  },
+  {
+    id: 'PRJ-07',
+    title: 'Kantor Kejaksaan Musirawas',
+    clientName: 'Kejaksaan Negeri Musirawas',
+    category: 'Network Security & Firewall',
+    year: '2024',
+    status: 'completed',
+    valueApprox: 'Paket Pengadaan Instansi',
+    description: 'Implementasi sistem keamanan surveillance, jaringan komputer terintegrasi, dan perangkat telekomunikasi kantor dinas.',
+    location: 'Musirawas, Sumatera Selatan',
+    city: 'Palembang',
+    sector: 'government',
+    sectorLabel: 'Instansi Pemerintah',
+    details: 'Implementasi kebutuhan TIK kantor kejaksaan: jaringan komputer terintegrasi antar ruang kerja, sistem surveillance area kantor & halaman parkir, serta perangkat telekomunikasi (PABX) yang mendukung operasional pelayanan publik.',
+    highlights: [
+      'Jaringan LAN terintegrasi ruang kerja',
+      'Surveillance area kantor & parkir',
+      'PABX telekomunikasi kantor dinas',
+    ],
+  },
+  {
+    id: 'PRJ-08',
+    title: 'Universitas Negeri Surabaya (UNESA)',
+    clientName: 'Universitas Negeri Surabaya',
+    category: 'Data Center & Network Infrastructure',
+    year: '2024',
+    status: 'completed',
+    valueApprox: 'Paket Kontrak Kampus',
+    description: 'Pembangunan infrastruktur jaringan kampus, fiber optic backbone, dan sistem proteksi keamanan jaringan.',
+    location: 'Surabaya, Jawa Timur',
+    city: 'Surabaya',
+    sector: 'education',
+    sectorLabel: 'Perguruan Tinggi',
+    details: 'Pembangunan infrastruktur jaringan antar gedung kampus: fiber optic backbone antar fakultas, distribusi access switch per lantai, sistem proteksi keamanan jaringan, serta wi-fi coverage area akademik untuk mendukung sistem informasi akademik terpusat.',
+    highlights: [
+      'Fiber optic backbone antar fakultas',
+      'Access switch per lantai gedung',
+      'Wi-fi coverage area akademik',
+    ],
+  },
+  {
+    id: 'PRJ-09',
+    title: 'Derma Aesthetic Tower - Summarecon',
+    clientName: 'Summarecon / Derma Aesthetic',
+    category: 'Surveillance (CCTV Systems)',
+    year: '2024',
+    status: 'completed',
+    valueApprox: 'Rp 250.000.000+',
+    description: 'Sistem pengawasan CCTV, access control smart card, tata suara sound system, dan instalasi kelistrikan pendukung.',
+    location: 'Bekasi, Jawa Barat',
+    city: 'Bekasi',
+    sector: 'commercial',
+    sectorLabel: 'Komersial & Klinik',
+    details: 'Pekerjaan sistem teknologi gedung komersial-campuran: CCTV pengawasan area publik & klinik, access control smart card untuk ruang terbatas, tata suara (sound system) lobi dan koridor, serta instalasi kelistrikan pendukung sistem.',
+    highlights: [
+      'CCTV area publik & klinik',
+      'Access control ruang terbatas',
+      'Sound system lobi & koridor',
+    ],
+  },
+  {
+    id: 'PRJ-10',
+    title: 'Gallery Art - Summarecon',
+    clientName: 'Summarecon',
+    category: 'Public Address & TOA',
+    year: '2023',
+    status: 'completed',
+    valueApprox: 'Rp 150.000.000+',
+    description: 'Pengadaan dan instalasi sistem tata suara (sound system), pencahayaan cerdas, dan surveillance keamanan galeri.',
+    location: 'Bandung, Jawa Barat',
+    city: 'Bandung',
+    sector: 'hospitality',
+    sectorLabel: 'Galeri & Lifestyle',
+    details: 'Pengadaan & instalasi sistem tata suara galeri seni dengan zona audio terpisah, pencahayaan cerdas (smart lighting) untuk penampilan karya, dan sistem surveillance keamanan karya seni di area pamer.',
+    highlights: [
+      'Sound system multi-zona galeri',
+      'Smart lighting display karya',
+      'Surveillance keamanan karya seni',
+    ],
+  },
+  {
+    id: 'PRJ-11',
+    title: 'Proyek Jalan Tol Serang - Panimbang',
+    clientName: 'BPJT Tol Serang - Panimbang',
+    category: 'Surveillance (CCTV Systems)',
+    year: '2023',
+    status: 'completed',
+    valueApprox: 'Paket Infrastruktur Tol',
+    description: 'Penyediaan sistem monitoring ruas tol: CCTV per kilometer, komunkasi backbone, dan perangkat pendukung gerbang tol.',
+    location: 'Serang, Banten',
+    city: 'Serang',
+    sector: 'infrastructure',
+    sectorLabel: 'Infrastruktur & Jalan Tol',
+    details: 'Pekerjaan sistem teknologi ruas jalan tol: CCTV pemantauan berkala di titik-titik strategis per ruas, backbone komunikasi data antar pos pengawasan, serta perangkat pendukung operasional gerbang tol dan rest area.',
+    highlights: [
+      'CCTV titik strategis per ruas',
+      'Backbone komunikasi antar pos',
+      'Perangkat pendukung gerbang tol',
+    ],
   },
 ];
 
@@ -188,11 +413,11 @@ export const getStoredProjects = (): AdminProject[] => {
     const raw = localStorage.getItem(PROJECTS_STORAGE_KEY);
     if (!raw) {
       localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(INITIAL_PROJECTS));
-      return INITIAL_PROJECTS;
+      return INITIAL_PROJECTS.map(normalizeProject);
     }
-    return JSON.parse(raw);
+    return (JSON.parse(raw) as AdminProject[]).map(normalizeProject);
   } catch {
-    return INITIAL_PROJECTS;
+    return INITIAL_PROJECTS.map(normalizeProject);
   }
 };
 
