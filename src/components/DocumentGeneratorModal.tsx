@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { AdminInquiry } from '../types/admin.ts';
 import { COMPANY_INFO } from '../data/companyData.ts';
 import { X, Printer, Plus, Trash2, FileText, FileSignature } from 'lucide-react';
@@ -44,7 +44,7 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
   const [terms, setTerms] = useState(
     docType === 'SPH'
       ? '1. Penawaran harga berlaku selama 30 hari kalender.\n2. Harga belum termasuk PPN 11%.\n3. Pembayaran: DP 50% saat SPK, 50% setelah serah terima (BAST).\n4. Waktu pelaksanaan menyesuaikan jadwal survei & kesepakatan.'
-      : 'Pasal 1 — Lingkup Pekerjaan: sesuai rincian teknis dan BoQ yang disepakati.\nPasal 2 — Nilai Kontrak: sebesar nilai total pekerjaan dalam Surat Penawaran terlampir.\nPasal 3 — Jangka Waktu: pelaksanaan sesuai jadwal yang disepakati kedua belah pihak.\nPasal 4 — Pembayaran: termin sesuai progres pekerjaan dan kesepakatan.\nPasal 5 — Kedua belah pihak wajib menjaga kerahasiaan data dan informasi proyek.'
+      : 'Pasal 1 â€” Lingkup Pekerjaan: sesuai rincian teknis dan BoQ yang disepakati.\nPasal 2 â€” Nilai Kontrak: sebesar nilai total pekerjaan dalam Surat Penawaran terlampir.\nPasal 3 â€” Jangka Waktu: pelaksanaan sesuai jadwal yang disepakati kedua belah pihak.\nPasal 4 â€” Pembayaran: termin sesuai progres pekerjaan dan kesepakatan.\nPasal 5 â€” Kedua belah pihak wajib menjaga kerahasiaan data dan informasi proyek.'
   );
 
   const total = useMemo(() => items.reduce((s, it) => s + it.qty * it.unitPrice, 0), [items]);
@@ -59,13 +59,13 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-5xl max-h-[92vh] flex flex-col shadow-2xl">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-white backdrop-blur-sm">
+      <div className="bg-white border border-slate-300 rounded-2xl w-full max-w-5xl max-h-[92vh] flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-800 print:hidden">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            {docType === 'SPH' ? <FileText className="w-4 h-4 text-cyan-400" /> : <FileSignature className="w-4 h-4 text-cyan-400" />}
-            {docType === 'SPH' ? 'Buat Surat Penawaran Harga (SPH)' : 'Buat Perjanjian Kerja Sama (PKS)'} — {inquiry.id}
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 print:hidden">
+          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            {docType === 'SPH' ? <FileText className="w-4 h-4 text-cyan-600" /> : <FileSignature className="w-4 h-4 text-cyan-600" />}
+            {docType === 'SPH' ? 'Buat Surat Penawaran Harga (SPH)' : 'Buat Perjanjian Kerja Sama (PKS)'} â€” {inquiry.id}
           </h3>
           <div className="flex items-center gap-2">
             <button
@@ -77,7 +77,7 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer transition-colors"
+              className="p-2 rounded-lg bg-slate-200 hover:bg-slate-700 text-slate-600 cursor-pointer transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -89,85 +89,85 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
           <div className="lg:col-span-5 space-y-3 print:hidden">
             <div className="grid grid-cols-2 gap-2">
               <label className="block">
-                <span className="text-[10px] font-mono text-slate-400">NOMOR DOKUMEN</span>
+                <span className="text-[10px] font-mono text-slate-500">NOMOR DOKUMEN</span>
                 <input value={docNumber} onChange={(e) => setDocNumber(e.target.value)}
-                  className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-400" />
+                  className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-cyan-400" />
               </label>
               <label className="block">
-                <span className="text-[10px] font-mono text-slate-400">TANGGAL</span>
+                <span className="text-[10px] font-mono text-slate-500">TANGGAL</span>
                 <input value={docDate} onChange={(e) => setDocDate(e.target.value)}
-                  className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-400" />
+                  className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-cyan-400" />
               </label>
             </div>
             <label className="block">
-              <span className="text-[10px] font-mono text-slate-400">PERUSAHAAN KLIEN</span>
+              <span className="text-[10px] font-mono text-slate-500">PERUSAHAAN KLIEN</span>
               <input value={clientCompany} onChange={(e) => setClientCompany(e.target.value)}
-                className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-400" />
+                className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-cyan-400" />
             </label>
             <label className="block">
-              <span className="text-[10px] font-mono text-slate-400">ALAMAT KLIEN</span>
+              <span className="text-[10px] font-mono text-slate-500">ALAMAT KLIEN</span>
               <textarea value={clientAddress} onChange={(e) => setClientAddress(e.target.value)} rows={2}
                 placeholder="Alamat lengkap klien..."
-                className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400" />
+                className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-cyan-400" />
             </label>
             <label className="block">
-              <span className="text-[10px] font-mono text-slate-400">U.P. (NAMA PIC)</span>
+              <span className="text-[10px] font-mono text-slate-500">U.P. (NAMA PIC)</span>
               <input value={attention} onChange={(e) => setAttention(e.target.value)}
-                className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-400" />
+                className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-cyan-400" />
             </label>
             <label className="block">
-              <span className="text-[10px] font-mono text-slate-400">PERIHAL</span>
+              <span className="text-[10px] font-mono text-slate-500">PERIHAL</span>
               <input value={subject} onChange={(e) => setSubject(e.target.value)}
-                className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-400" />
+                className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-cyan-400" />
             </label>
 
             {/* Items */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono text-slate-400">
+                <span className="text-[10px] font-mono text-slate-500">
                   {docType === 'SPH' ? 'RINCIAN BARANG / JASA' : 'LINGKUP PEKERJAAN & NILAI'}
                 </span>
                 <button
                   onClick={() => setItems([...items, { description: '', qty: 1, unit: 'Unit', unitPrice: 0 }])}
-                  className="flex items-center gap-1 text-[10px] font-semibold text-cyan-400 hover:text-cyan-300 cursor-pointer"
+                  className="flex items-center gap-1 text-[10px] font-semibold text-cyan-600 hover:text-cyan-700 cursor-pointer"
                 >
                   <Plus className="w-3 h-3" /> Tambah Item
                 </button>
               </div>
               {items.map((it, idx) => (
-                <div key={idx} className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1.5">
+                <div key={idx} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                   <div className="flex items-center gap-1.5">
                     <input value={it.description} onChange={(e) => updateItem(idx, { description: e.target.value })}
                       placeholder="Deskripsi item..."
-                      className="flex-1 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400" />
+                      className="flex-1 px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-cyan-400" />
                     <button onClick={() => setItems(items.filter((_, i) => i !== idx))}
-                      className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 cursor-pointer">
+                      className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 cursor-pointer">
                       <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
                   <div className="grid grid-cols-3 gap-1.5">
                     <input type="number" min={1} value={it.qty} onChange={(e) => updateItem(idx, { qty: Number(e.target.value) || 1 })}
                       title="Qty"
-                      className="px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-400" />
+                      className="px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-cyan-400" />
                     <input value={it.unit} onChange={(e) => updateItem(idx, { unit: e.target.value })} placeholder="Satuan"
-                      className="px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-400" />
+                      className="px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-cyan-400" />
                     <input type="number" min={0} value={it.unitPrice} onChange={(e) => updateItem(idx, { unitPrice: Number(e.target.value) || 0 })}
                       title="Harga satuan (Rp)" placeholder="Harga (Rp)"
-                      className="px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-400" />
+                      className="px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-cyan-400" />
                   </div>
                 </div>
               ))}
-              <div className="text-right text-xs font-bold text-cyan-300">
+              <div className="text-right text-xs font-bold text-cyan-700">
                 Total: {formatRupiah(total)}
               </div>
             </div>
 
             <label className="block">
-              <span className="text-[10px] font-mono text-slate-400">
+              <span className="text-[10px] font-mono text-slate-500">
                 {docType === 'SPH' ? 'SYARAT & KETENTUAN' : 'PASAL-PASAL PERJANJIAN'}
               </span>
               <textarea value={terms} onChange={(e) => setTerms(e.target.value)} rows={6}
-                className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white leading-relaxed focus:outline-none focus:border-cyan-400" />
+                className="w-full mt-1 px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 leading-relaxed focus:outline-none focus:border-cyan-400" />
             </label>
           </div>
 
@@ -177,11 +177,11 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
               {/* Letterhead */}
               <div className="flex items-start justify-between border-b-4 border-cyan-600 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-cyan-700 text-white flex items-center justify-center font-bold text-base">IZ</div>
+                  <div className="w-12 h-12 rounded-full bg-cyan-700 text-slate-900 flex items-center justify-center font-bold text-base">IZ</div>
                   <div>
                     <div className="font-bold text-sm tracking-wide">{COMPANY_INFO.name}</div>
                     <div className="text-[10px] text-slate-600">{COMPANY_INFO.subheading}</div>
-                    <div className="text-[9px] text-slate-500">{COMPANY_INFO.address} • {COMPANY_INFO.phoneLandline} • {COMPANY_INFO.website}</div>
+                    <div className="text-[9px] text-slate-500">{COMPANY_INFO.address} â€¢ {COMPANY_INFO.phoneLandline} â€¢ {COMPANY_INFO.website}</div>
                   </div>
                 </div>
                 <div className="text-right text-[9px] text-slate-600">

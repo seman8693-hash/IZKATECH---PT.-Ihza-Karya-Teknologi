@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+﻿import React, { useRef, useEffect } from 'react';
 import { ChatSession } from '../types/admin.ts';
 import {
   Headphones,
@@ -50,16 +50,16 @@ export const ChatCRMTab: React.FC<ChatCRMTabProps> = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       {/* Chat Session List (Left Panel) */}
-      <div className="lg:col-span-4 bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col h-[600px]">
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <Headphones className="w-4 h-4 text-cyan-400" />
+      <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xl flex flex-col h-[600px]">
+        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <Headphones className="w-4 h-4 text-cyan-600" />
             <span>Sesi Live Chat ({chatSessions.length})</span>
           </h3>
           <span className="text-[10px] font-mono text-slate-600">CRM v2.4</span>
         </div>
 
-        <div className="flex-1 overflow-y-auto divide-y divide-slate-800">
+        <div className="flex-1 overflow-y-auto divide-y divide-slate-200">
           {chatSessions.length === 0 ? (
             <div className="p-6 text-center text-slate-500 text-xs">
               <MessageSquare className="w-8 h-8 mx-auto mb-2 text-slate-600" />
@@ -75,28 +75,28 @@ export const ChatCRMTab: React.FC<ChatCRMTabProps> = ({
                   onClick={() => onSelectSession(session)}
                   className={`p-3 cursor-pointer transition-all border-l-2 ${
                     selectedChatSession?.id === session.id
-                      ? 'bg-cyan-950/30 border-cyan-400'
-                      : 'bg-transparent border-transparent hover:bg-slate-800/40'
+                      ? 'bg-cyan-50 border-cyan-400'
+                      : 'bg-transparent border-transparent hover:bg-slate-100'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold text-white truncate">
+                        <span className="text-xs font-bold text-slate-900 truncate">
                           {session.visitorName}
                         </span>
                         {hasUnread && (
-                          <span className="flex items-center justify-center w-4 h-4 text-[9px] font-mono font-bold text-white bg-rose-500 rounded-full shrink-0">
+                          <span className="flex items-center justify-center w-4 h-4 text-[9px] font-mono font-bold text-slate-900 bg-rose-500 rounded-full shrink-0">
                             {session.unreadCountAdmin}
                           </span>
                         )}
                       </div>
                       {session.visitorCompany && (
-                        <div className="text-[10px] text-cyan-300 font-medium truncate">
+                        <div className="text-[10px] text-cyan-700 font-medium truncate">
                           {session.visitorCompany}
                         </div>
                       )}
-                      <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                      <div className="text-[10px] text-slate-500 mt-0.5 truncate">
                         {session.messages.length > 0
                           ? session.messages[session.messages.length - 1].text
                           : 'Belum ada pesan.'}
@@ -111,8 +111,8 @@ export const ChatCRMTab: React.FC<ChatCRMTabProps> = ({
                   <div className="flex items-center justify-between mt-1.5 gap-2">
                     <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${
                       isActive
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                        : 'bg-slate-500/20 text-slate-400 border border-slate-600'
+                        ? 'bg-cyan-500/20 text-cyan-700 border border-cyan-500/30'
+                        : 'bg-slate-500/20 text-slate-500 border border-slate-600'
                     }`}>
                       {session.status === 'active' ? 'AKTIF' : 'SELESAI'}
                     </span>
@@ -127,10 +127,10 @@ export const ChatCRMTab: React.FC<ChatCRMTabProps> = ({
         </div>
 
         {/* Chat list actions footer */}
-        <div className="p-3 border-t border-slate-800 flex gap-2 text-xs">
+        <div className="p-3 border-t border-slate-200 flex gap-2 text-xs">
           <button
             onClick={onRefresh}
-            className="flex-1 px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 hover:text-white hover:border-cyan-500/40 transition-colors cursor-pointer font-mono text-[10px]"
+            className="flex-1 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 hover:border-cyan-500/40 transition-colors cursor-pointer font-mono text-[10px]"
             title="Segarkan Sesi Chat"
           >
             <RefreshCw className="w-3 h-3 inline mr-1" />
@@ -139,7 +139,7 @@ export const ChatCRMTab: React.FC<ChatCRMTabProps> = ({
           {selectedChatSession && (
             <button
               onClick={() => onDeleteChatSession(selectedChatSession)}
-              className="flex-1 px-2.5 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 transition-colors cursor-pointer font-mono text-[10px]"
+              className="flex-1 px-2.5 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-600 hover:bg-rose-500/20 transition-colors cursor-pointer font-mono text-[10px]"
               title="Arsipkan Chat"
             >
               <Archive className="w-3 h-3 inline mr-1" />
@@ -150,26 +150,26 @@ export const ChatCRMTab: React.FC<ChatCRMTabProps> = ({
       </div>
 
       {/* Chat Conversation Panel (Right Panel) */}
-      <div className="lg:col-span-8 bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col h-[600px]">
+      <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xl flex flex-col h-[600px]">
         {selectedChatSession ? (
           <>
             {/* Conversation Header */}
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-9 h-9 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+                <div className="flex items-center justify-center w-9 h-9 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-600">
                   <Users className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <h4 className="text-sm font-bold text-white">
+                    <h4 className="text-sm font-bold text-slate-900">
                       {selectedChatSession.visitorName}
                     </h4>
                     {selectedChatSession.status === 'active' ? (
-                      <span className="text-[10px] font-mono text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 px-1.5 py-0.5 rounded-full">
+                      <span className="text-[10px] font-mono text-cyan-700 bg-cyan-500/10 border border-cyan-500/30 px-1.5 py-0.5 rounded-full">
                         ONLINE
                       </span>
                     ) : (
-                      <span className="text-[10px] font-mono text-slate-500 bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded-full">
+                      <span className="text-[10px] font-mono text-slate-500 bg-slate-200 border border-slate-300 px-1.5 py-0.5 rounded-full">
                         RESOLVED
                       </span>
                     )}
@@ -188,8 +188,8 @@ export const ChatCRMTab: React.FC<ChatCRMTabProps> = ({
                   onClick={() => onResolveChat(selectedChatSession)}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                     selectedChatSession.status === 'active'
-                      ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/30'
-                      : 'bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 border border-cyan-500/30'
+                      ? 'bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border border-amber-500/30'
+                      : 'bg-cyan-500/10 text-cyan-600 hover:bg-cyan-500/20 border border-cyan-500/30'
                   }`}
                   title={selectedChatSession.status === 'active' ? 'Tandai Selesai' : 'Aktifkan Ulang'}
                 >
@@ -201,7 +201,7 @@ export const ChatCRMTab: React.FC<ChatCRMTabProps> = ({
                 </button>
                 <button
                   onClick={() => onDeleteChatSession(selectedChatSession)}
-                  className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 border border-rose-500/30 transition-colors cursor-pointer"
                   title="Hapus Chat"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -212,7 +212,7 @@ export const ChatCRMTab: React.FC<ChatCRMTabProps> = ({
             {/* Messages Body */}
             <div
               ref={messagesEndRef}
-              className="flex-1 overflow-y-auto p-4 space-y-3 text-xs bg-slate-950/40"
+              className="flex-1 overflow-y-auto p-4 space-y-3 text-xs bg-slate-100"
             >
               {selectedChatSession.messages.map((msg) => {
                 const isVisitor = msg.sender === 'visitor';
@@ -221,7 +221,7 @@ export const ChatCRMTab: React.FC<ChatCRMTabProps> = ({
                 if (isSystem) {
                   return (
                     <div key={msg.id} className="text-center my-2">
-                      <span className="inline-block px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700 text-[10px] text-slate-400">
+                      <span className="inline-block px-3 py-1 rounded-full bg-slate-100 border border-slate-300 text-[10px] text-slate-500">
                         {msg.text}
                       </span>
                     </div>
@@ -234,12 +234,12 @@ export const ChatCRMTab: React.FC<ChatCRMTabProps> = ({
                     className={`flex flex-col ${isVisitor ? 'items-end' : 'items-start'}`}
                   >
                     <span className="text-[10px] text-slate-500 mb-0.5 px-1 font-mono">
-                      {isVisitor ? 'Pengunjung' : msg.senderName} • {msg.timestamp}
+                      {isVisitor ? 'Pengunjung' : msg.senderName} â€¢ {msg.timestamp}
                     </span>
                     <div
                       className={`max-w-[80%] p-3 rounded-2xl leading-relaxed whitespace-pre-wrap ${
                         isVisitor
-                          ? 'bg-slate-800/90 text-slate-200 border border-slate-700 rounded-tr-xs shadow-md'
+                          ? 'bg-slate-100 text-slate-700 border border-slate-300 rounded-tr-xs shadow-md'
                           : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-medium rounded-tl-xs shadow-md'
                       }`}
                     >
@@ -253,14 +253,14 @@ export const ChatCRMTab: React.FC<ChatCRMTabProps> = ({
             {/* Admin Reply Input */}
             <form
               onSubmit={onSendAdminMessage}
-              className="p-3 border-t border-slate-800 bg-slate-900 flex items-center gap-2"
+              className="p-3 border-t border-slate-200 bg-white flex items-center gap-2"
             >
               <input
                 type="text"
                 value={adminMessageInput}
                 onChange={(e) => setAdminMessageInput(e.target.value)}
                 placeholder="Ketik balasan Anda kepada pengunjung..."
-                className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-cyan-400"
+                className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs placeholder:text-slate-500 focus:outline-none focus:border-cyan-400"
                 maxLength={1000}
               />
               <button
