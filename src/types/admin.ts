@@ -9,7 +9,7 @@ export interface AdminInquiry {
   scale?: string;
   budgetEstimate?: string;
   notes: string;
-  source: 'kalkulator' | 'kontak' | 'rfp';
+  source: 'kalkulator' | 'kontak' | 'rfp' | 'manual';
   status: 'new' | 'contacted' | 'survey' | 'deal' | 'archived';
   priority: 'high' | 'medium' | 'normal';
 }
