@@ -18,6 +18,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import App from '../src/App.tsx';
 import { AdminDashboard } from '../src/components/AdminDashboard.tsx';
 import { SettingsTab } from '../src/components/dashboard/SettingsTab.tsx';
+import { Logo } from '../src/components/Logo.tsx';
+import { defaultBrandSettings, saveBrandSettings } from '../src/data/adminStore.ts';
 import {
   SECTOR_META,
   checkAdminAuth,
@@ -160,6 +162,25 @@ check(
   'opsi kop surat & watermark tersedia di pengaturan',
   settingsHtml.includes('Logo Header SPK/Invoice') && settingsHtml.includes('Opacity Watermark')
 );
+
+// Identitas brand (wordmark) mengikuti Pengaturan Logo & Identitas Brand
+const customBrand = defaultBrandSettings();
+customBrand.legal.brandName = 'TESTBRAND';
+customBrand.legal.subBrand1 = 'Sub Uji Satu';
+customBrand.legal.subBrand2 = 'Sub Uji Dua';
+saveBrandSettings(customBrand);
+const logoHtml = renderToStaticMarkup(React.createElement(Logo));
+check(
+  'wordmark komponen Logo mengikuti Pengaturan Brand',
+  logoHtml.includes('TESTBRAND') && logoHtml.includes('Sub Uji Dua'),
+  logoHtml.slice(0, 120)
+);
+const loginBrandHtml = renderToStaticMarkup(React.createElement(AdminDashboard, { onBackToWebsite: () => undefined }));
+check('layar login menampilkan brand kustom', loginBrandHtml.includes('TESTBRAND') && loginBrandHtml.includes('Sub Uji Dua'));
+
+saveBrandSettings(defaultBrandSettings());
+const logoResetHtml = renderToStaticMarkup(React.createElement(Logo));
+check('wordmark kembali ke default setelah reset', logoResetHtml.includes('IZKATECH'));
 
 // ---------------------------------------------------------------- ringkasan
 console.log('\n---------------------------------------------');

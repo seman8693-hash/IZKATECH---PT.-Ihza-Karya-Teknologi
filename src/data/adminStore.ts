@@ -656,7 +656,7 @@ export const saveBrandSettings = (settings: BrandSettings) => {
   }
 };
 
-/** Pasang favicon browser dari pengaturan brand (panggil saat boot & saat berubah). */
+/** Terapkan favicon dari pengaturan brand (panggil saat boot & saat berubah). */
 export const applyBrandFavicon = () => {
   try {
     const href = getBrandSettings().favicon;
@@ -676,6 +676,75 @@ export const applyBrandFavicon = () => {
   } catch {
     /* environment tanpa DOM — abaikan */
   }
+};
+
+const guessAssetMime = (dataUrl: string): string =>
+  dataUrl.startsWith('data:image/svg')
+    ? 'image/svg+xml'
+    : dataUrl.startsWith('data:image/webp')
+      ? 'image/webp'
+      : 'image/png';
+
+let brandManifestUrl: string | null = null;
+
+/** Timpa manifest PWA + apple-touch-icon dengan aset & identitas dari Pengaturan Brand. */
+export const applyBrandManifest = () => {
+  try {
+    const brand = getBrandSettings();
+    const manifestLink = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (!manifestLink) return;
+    const icon = brand.favicon || brand.mainLogo;
+
+    if (!icon) {
+      // Tidak ada aset kustom — kembalikan manifest statis bawaan
+      if (brandManifestUrl) {
+        URL.revokeObjectURL(brandManifestUrl);
+        brandManifestUrl = null;
+      }
+      manifestLink.href = '/manifest.json';
+      document.querySelector<HTMLLinkElement>('link#izkatech-apple-icon')?.remove();
+      return;
+    }
+
+    const mime = guessAssetMime(icon);
+    const dynamicManifest = {
+      name: `${brand.legal.brandName} - ${brand.legal.companyName}`,
+      short_name: brand.legal.brandName,
+      description: brand.legal.tagline,
+      start_url: '/',
+      display: 'standalone',
+      background_color: brand.colors.dark,
+      theme_color: brand.colors.primary,
+      orientation: 'portrait-primary',
+      icons: [
+        { src: icon, sizes: '192x192', type: mime, purpose: 'any' },
+        { src: icon, sizes: '512x512', type: mime, purpose: 'any maskable' },
+      ],
+    };
+
+    if (brandManifestUrl) URL.revokeObjectURL(brandManifestUrl);
+    brandManifestUrl = URL.createObjectURL(
+      new Blob([JSON.stringify(dynamicManifest)], { type: 'application/manifest+json' })
+    );
+    manifestLink.href = brandManifestUrl;
+
+    let apple = document.querySelector<HTMLLinkElement>('link#izkatech-apple-icon');
+    if (!apple) {
+      apple = document.createElement('link');
+      apple.id = 'izkatech-apple-icon';
+      apple.rel = 'apple-touch-icon';
+      document.head.appendChild(apple);
+    }
+    apple.href = icon;
+  } catch {
+    /* SSR / lingkungan tanpa DOM — abaikan */
+  }
+};
+
+/** Terapkan seluruh aset brand ke dokumen: favicon + manifest PWA + apple icon. */
+export const applyBrandAssets = () => {
+  applyBrandFavicon();
+  applyBrandManifest();
 };
 
 // -------------------------------------------------------------

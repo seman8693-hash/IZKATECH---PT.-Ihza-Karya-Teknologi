@@ -19,7 +19,7 @@ import { ServiceDetailModal } from './components/ServiceDetailModal.tsx';
 import { PresentationSlideDeck } from './components/PresentationSlideDeck.tsx';
 import { AdminDashboard } from './components/AdminDashboard.tsx';
 import { LiveChatWidget } from './components/LiveChatWidget.tsx';
-import { applyBrandFavicon } from './data/adminStore.ts';
+import { applyBrandAssets } from './data/adminStore.ts';
 import { ServiceItem } from './types/site.ts';
 
 export default function App() {
@@ -31,9 +31,9 @@ export default function App() {
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    // Favicon dinamis: ikuti Icon & Favicon dari Pengaturan Logo & Identitas Brand
-    applyBrandFavicon();
-    const handleBrandUpdate = () => applyBrandFavicon();
+    // Favicon + manifest PWA dinamis: ikuti Pengaturan Logo & Identitas Brand
+    applyBrandAssets();
+    const handleBrandUpdate = () => applyBrandAssets();
     window.addEventListener('izkatech_brand_updated', handleBrandUpdate);
     return () => window.removeEventListener('izkatech_brand_updated', handleBrandUpdate);
   }, []);

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Logo } from '../Logo.tsx';
+import { useBrandIdentity } from '../../hooks/useBrandIdentity.ts';
 import {
   BarChart3,
   Inbox,
@@ -50,6 +51,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   mobile = false,
   onClose,
 }) => {
+  // Identitas brand aktif — ikut Pengaturan Logo & Identitas Brand
+  const identity = useBrandIdentity();
+
   return (
     <aside
       className={`${
@@ -64,10 +68,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           <Logo size="md" showText={false} className="shrink-0" />
           <div className="leading-tight min-w-0 flex-1">
             <div className="text-lg font-extrabold tracking-tight text-teal-800 font-display">
-              IZKATECH
+              {identity.brandName}
             </div>
-            <div className="text-[8.5px] font-bold uppercase tracking-wider text-emerald-600">
-              ICT System Integrator &amp; ME
+            <div className="text-[8.5px] font-bold uppercase tracking-wider text-emerald-600 truncate">
+              {identity.subBrand2}
             </div>
           </div>
           {mobile && onClose && (
@@ -80,8 +84,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           )}
         </div>
         <div className="mt-2.5 flex items-center justify-center gap-2">
-          <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
-            PT. IHZA KARYA TEKNOLOGI
+          <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200 uppercase">
+            {identity.companyName}
           </span>
         </div>
       </div>

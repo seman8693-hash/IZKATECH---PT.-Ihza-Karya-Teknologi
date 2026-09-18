@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
 import { Logo } from './Logo.tsx';
+import { useBrandIdentity } from '../hooks/useBrandIdentity.ts';
 import { 
   getStoredInquiries, 
   updateInquiry,
@@ -61,6 +62,8 @@ const waLink = (phone: string): string => {
 };
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite }) => {
+  // Identitas brand aktif — ikut Pengaturan Logo & Identitas Brand
+  const identity = useBrandIdentity();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [emailInput, setEmailInput] = useState<string>('');
   const [passwordInput, setPasswordInput] = useState<string>('');
@@ -301,17 +304,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
           <div className="flex items-center justify-center gap-3 mb-4">
             <Logo size="lg" showText={false} className="shrink-0" />
             <div className="text-left leading-tight">
-              <div className="text-base font-bold text-white">PT Ihza Karya Teknologi</div>
+              <div className="text-base font-bold text-white">{identity.companyName}</div>
               <div className="text-[11px] text-slate-400">Information Communication Technology</div>
-              <div className="text-[11px] font-semibold text-slate-200">System Integrator <span className="text-cyan-400">&amp;</span> Mechanical Electrical</div>
+              <div className="text-[11px] font-semibold text-slate-200">{identity.subBrand2}</div>
               <div className="mt-1.5 h-1 w-24 rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400" />
             </div>
           </div>
 
           {/* IZKATECH wordmark di bawah logo */}
           <div className="text-center mb-1.5">
-            <div className="text-lg font-extrabold tracking-wide text-cyan-300 font-display">IZKATECH</div>
-            <div className="text-[9px] font-bold uppercase tracking-widest text-emerald-400">ICT System Integrator</div>
+            <div className="text-lg font-extrabold tracking-wide text-cyan-300 font-display">
+              {identity.brandName}
+            </div>
+            <div className="text-[9px] font-bold uppercase tracking-widest text-emerald-400">
+              {identity.tagline}
+            </div>
           </div>
 
           {/* Badge mode masuk admin */}

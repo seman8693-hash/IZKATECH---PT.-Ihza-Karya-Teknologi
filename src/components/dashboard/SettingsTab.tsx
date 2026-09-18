@@ -20,7 +20,7 @@ import {
 import { Logo } from '../Logo.tsx';
 import {
   BrandSettings,
-  applyBrandFavicon,
+  applyBrandAssets,
   defaultBrandSettings,
   getBrandSettings,
   getCustomLogo,
@@ -166,7 +166,7 @@ export const SettingsTab: React.FC = () => {
   const handleSave = () => {
     setSaving(true);
     saveBrandSettings(draft);
-    applyBrandFavicon();
+    applyBrandAssets();
     setSavedTick(true);
     window.setTimeout(() => {
       setSavedTick(false);

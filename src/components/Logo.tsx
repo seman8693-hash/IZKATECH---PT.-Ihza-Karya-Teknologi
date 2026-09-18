@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useBrandIdentity } from '../hooks/useBrandIdentity.ts';
 import { getCustomLogo } from '../data/adminStore';
 
 interface LogoProps {
@@ -17,6 +18,7 @@ export const Logo: React.FC<LogoProps> = ({
   variant = 'cyan-gold'
 }) => {
   const [customLogo, setCustomLogoState] = useState<string | null>(null);
+  const identity = useBrandIdentity();
 
   useEffect(() => {
     setCustomLogoState(getCustomLogo());
@@ -24,7 +26,11 @@ export const Logo: React.FC<LogoProps> = ({
       setCustomLogoState(getCustomLogo());
     };
     window.addEventListener('izkatech_logo_updated', handleUpdate);
-    return () => window.removeEventListener('izkatech_logo_updated', handleUpdate);
+    window.addEventListener('izkatech_brand_updated', handleUpdate);
+    return () => {
+      window.removeEventListener('izkatech_logo_updated', handleUpdate);
+      window.removeEventListener('izkatech_brand_updated', handleUpdate);
+    };
   }, []);
 
   const iconSizes = {
@@ -114,13 +120,13 @@ export const Logo: React.FC<LogoProps> = ({
           <span className={`font-display font-extrabold tracking-tight leading-none ${titleSizes[size]} ${
             variant === 'cyan-gold' ? 'text-cyan-400' : 'text-white'
           }`}>
-            IZKATECH
+            {identity.brandName || 'IZKATECH'}
           </span>
           {showSubtitle && (
             <span className={`font-semibold uppercase mt-1 leading-tight ${subtitleSizes[size]} ${
               variant === 'cyan-gold' ? 'text-amber-400' : 'text-cyan-400'
             }`}>
-              ICT SYSTEM INTEGRATOR &amp; ME
+              {identity.subBrand2 || 'ICT SYSTEM INTEGRATOR & ME'}
             </span>
           )}
         </div>
