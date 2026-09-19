@@ -27,6 +27,8 @@ import { AdminSidebar, AdminTab } from './dashboard/AdminSidebar.tsx';
 import { StatsCard } from './dashboard/StatsCard.tsx';
 import { ProjectFormModal } from './dashboard/ProjectFormModal.tsx';
 import { SettingsTab } from './dashboard/SettingsTab.tsx';
+import { ReportsTab } from './dashboard/ReportsTab.tsx';
+import { csvDateStamp, downloadCsv } from '../utils/reportUtils.ts';
 import { 
   Lock, 
   LogOut, 
@@ -47,7 +49,8 @@ import {
   Headphones,
   User,
   Menu,
-  MapPin
+  MapPin,
+  TrendingUp
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -255,27 +258,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
 
   const exportInquiriesToCSV = () => {
     const headers = ['ID', 'Tanggal', 'Nama Klien', 'Perusahaan', 'No WhatsApp', 'Email', 'Layanan', 'Skala', 'Status', 'Catatan'];
+    // downloadCsv menambahkan BOM UTF-8 & escaping kutip otomatis
     const rows = inquiries.map(item => [
       item.id,
       item.timestamp,
-      `"${item.clientName}"`,
-      `"${item.companyName}"`,
-      `"${item.phone}"`,
-      `"${item.email}"`,
-      `"${item.serviceInterest.join(', ')}"`,
-      `"${item.scale || '-'}"`,
+      item.clientName,
+      item.companyName,
+      item.phone,
+      item.email,
+      item.serviceInterest.join(', '),
+      item.scale || '-',
       item.status,
-      `"${item.notes.replace(/"/g, '""')}"`
+      item.notes
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `izkatech_prospek_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadCsv(`izkatech_prospek_${csvDateStamp()}.csv`, headers, rows);
   };
 
   // Calculate Metrics
@@ -488,7 +485,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
       {/* Main Workspace Column */}
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Mobile Top Bar */}
-        <header className="lg:hidden sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
+        <header className="lg:hidden sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 print:hidden">
           <div className="px-4 h-14 flex items-center justify-between gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -659,6 +656,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                   <div className="min-w-0 flex-1">
                     <div className="text-xs font-bold text-slate-900 leading-snug">Kelola Proyek</div>
                     <div className="text-[10px] text-slate-500 leading-snug">{projects.length} proyek portofolio</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setCurrentTab('reports')}
+                  className="w-full grid grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50 transition-all cursor-pointer text-left"
+                >
+                  <span className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0">
+                    <TrendingUp className="w-4 h-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-slate-900 leading-snug">Buka Laporan</div>
+                    <div className="text-[10px] text-slate-500 leading-snug">Analitik prospek, konversi &amp; portofolio</div>
                   </div>
                 </button>
                 </div>
@@ -969,6 +978,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             TAB 5: PENGATURAN LOGO & IDENTITAS BRAND (single source of truth)
             ------------------------------------------------------------- */}
         {currentTab === 'settings' && <SettingsTab />}
+
+        {/* -------------------------------------------------------------
+            TAB 6: LAPORAN & ANALITIK (rekap prospek, konversi & portofolio)
+            ------------------------------------------------------------- */}
+        {currentTab === 'reports' && <ReportsTab inquiries={inquiries} projects={projects} />}
 
         </main>
       </div>

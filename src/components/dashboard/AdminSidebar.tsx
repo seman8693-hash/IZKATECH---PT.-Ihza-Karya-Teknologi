@@ -7,13 +7,14 @@ import {
   Briefcase,
   Layers,
   Headphones,
+  TrendingUp,
   Settings,
   LogOut,
   ExternalLink,
   X,
 } from 'lucide-react';
 
-export type AdminTab = 'overview' | 'inquiries' | 'projects' | 'services' | 'chat' | 'settings';
+export type AdminTab = 'overview' | 'inquiries' | 'projects' | 'services' | 'chat' | 'reports' | 'settings';
 
 interface SidebarCounts {
   inquiries: number;
@@ -39,6 +40,7 @@ const NAV_ITEMS: { tab: AdminTab; label: string; icon: React.FC<{ className?: st
   { tab: 'projects', label: 'Proyek Portofolio', icon: Briefcase },
   { tab: 'services', label: 'Layanan & Brand', icon: Layers },
   { tab: 'chat', label: 'Live Chat CRM', icon: Headphones },
+  { tab: 'reports', label: 'Laporan & Analitik', icon: TrendingUp },
   { tab: 'settings', label: 'Pengaturan', icon: Settings },
 ];
 
@@ -60,7 +62,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         mobile
           ? 'fixed inset-y-0 left-0 z-[60] w-72 shadow-2xl'
           : 'hidden lg:flex sticky top-0 h-screen w-64 shrink-0'
-      } bg-white border-r border-slate-200 flex-col`}
+      } bg-white border-r border-slate-200 flex-col print:hidden`}
     >
       {/* Brand Block — logo IZKATECH di kartu terang (sesuai identitas resmi) */}
       <div className="p-4 border-b border-slate-100">
