@@ -1,8 +1,9 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Logo } from './Logo.tsx';
 import { ConcentricRingsArt } from './ConcentricRingsArt.tsx';
 import { EquipmentVisualShowcase } from './EquipmentVisualShowcase.tsx';
 import { BRAND_PARTNERS } from '../data/companyData.ts';
+import { getPartnerLogo, getPartnerDisplayName } from '../data/adminStore.ts';
 import { ShieldCheck, Award, Layers, Cpu, Radio, Camera, KeyRound } from 'lucide-react';
 
 interface PartnersSectionProps {
@@ -12,6 +13,13 @@ interface PartnersSectionProps {
 export const PartnersSection: React.FC<PartnersSectionProps> = ({ lang }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [activeDevice, setActiveDevice] = useState<'cctv' | 'access-control' | 'network-security' | 'telecom' | 'hardware'>('cctv');
+  const [, setRefreshTick] = useState(0);
+
+  useEffect(() => {
+    const handleUpdate = () => setRefreshTick((prev) => prev + 1);
+    window.addEventListener('izkatech_brand_updated', handleUpdate);
+    return () => window.removeEventListener('izkatech_brand_updated', handleUpdate);
+  }, []);
 
   const categories = [
     { id: 'all', labelId: 'Semua Brand (20+)', labelEn: 'All Brands (20+)' },
@@ -283,35 +291,44 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ lang }) => {
 
         {/* Brand Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {filteredBrands.map((brand, index) => (
-            <div
-              key={index}
-              className="bg-white/90 border border-slate-200/90 hover:border-cyan-500/50 rounded-xl p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-lg hover:shadow-cyan-950/40 group text-left"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <span className="p-1.5 rounded-lg bg-white border border-slate-200">
-                  {getCategoryIcon(brand.categoryKey)}
-                </span>
-                <span className="text-[10px] uppercase tracking-wider text-slate-500 group-hover:text-cyan-600 transition-colors font-mono">
-                  Official
-                </span>
-              </div>
+          {filteredBrands.map((brand, index) => {
+            const customLogo = getPartnerLogo(brand.name);
+            const displayName = getPartnerDisplayName(brand.name);
 
-              <div>
-                <div className="text-lg font-bold text-white group-hover:text-cyan-700 transition-colors font-display">
-                  {brand.name}
+            return (
+              <div
+                key={index}
+                className="bg-white/95 border border-slate-200/90 hover:border-cyan-500/50 rounded-xl p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-lg hover:shadow-cyan-950/20 group text-left"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="p-1.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center min-w-[36px] min-h-[36px]">
+                    {customLogo ? (
+                      <img src={customLogo} alt={displayName} className="w-8 h-8 object-contain rounded" />
+                    ) : (
+                      getCategoryIcon(brand.categoryKey)
+                    )}
+                  </span>
+                  <span className="text-[10px] uppercase tracking-wider text-slate-500 group-hover:text-cyan-600 transition-colors font-mono">
+                    Official
+                  </span>
                 </div>
-                <div className="text-[11px] text-slate-500 mt-1 leading-tight line-clamp-2">
-                  {brand.category}
-                </div>
-              </div>
 
-              <div className="mt-3 pt-2 border-t border-slate-300 flex items-center gap-1.5 text-[10px] text-slate-500">
-                <Award className="w-3 h-3 text-cyan-600/80" />
-                <span>Enterprise Certified</span>
+                <div>
+                  <div className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-cyan-600 transition-colors font-display leading-tight">
+                    {displayName}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1 leading-tight line-clamp-2">
+                    {brand.category}
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-slate-200 flex items-center gap-1.5 text-[10px] text-slate-500">
+                  <Award className="w-3 h-3 text-cyan-600/80" />
+                  <span>Enterprise Certified</span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Assurance Banner */}

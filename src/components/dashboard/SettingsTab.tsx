@@ -9,6 +9,7 @@ import {
   HelpCircle,
   Image as ImageIcon,
   Info,
+  Layers,
   Palette,
   RefreshCw,
   Save,
@@ -18,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { Logo } from '../Logo.tsx';
+import { BRAND_PARTNERS } from '../../data/companyData.ts';
 import {
   BrandSettings,
   applyBrandAssets,
@@ -134,6 +136,7 @@ export const SettingsTab: React.FC = () => {
   const [savedTick, setSavedTick] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [docHeaderTab, setDocHeaderTab] = useState<'kop' | 'sampul'>('kop');
+  const [partnerFilter, setPartnerFilter] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
   // Ref input file per slot aset
@@ -730,6 +733,145 @@ export const SettingsTab: React.FC = () => {
               ))}
             </div>
           </section>
+        </div>
+      </div>
+
+      {/* Kartu: Pengaturan Logo & Nama Partner Prinsipal */}
+      <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2.5 rounded-2xl bg-cyan-500/10 text-cyan-600 border border-cyan-500/20">
+              <Layers className="w-5 h-5" />
+            </span>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 font-display">
+                Pengaturan Logo &amp; Nama Partner Prinsipal (20+ Brands)
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                Ganti nama partner dan unggah logo resmi (Hikvision, Dahua, Fortinet, Cisco, HP, dll.) untuk ditampilkan di section Partner website.
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full sm:w-64">
+            <input
+              type="text"
+              value={partnerFilter}
+              onChange={(e) => setPartnerFilter(e.target.value)}
+              placeholder="Cari partner (mis. Hikvision)..."
+              className="w-full px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-cyan-500"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[460px] overflow-y-auto p-1 pr-2">
+          {BRAND_PARTNERS.filter((p) => {
+            if (!partnerFilter.trim()) return true;
+            const q = partnerFilter.toLowerCase();
+            const customName = draft.partnerCustomizations?.[p.name]?.name || '';
+            return p.name.toLowerCase().includes(q) || customName.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
+          }).map((p) => {
+            const custom = draft.partnerCustomizations?.[p.name] || {};
+            const currentName = custom.name !== undefined ? custom.name : p.name;
+            const currentLogo = custom.logo || null;
+
+            return (
+              <div key={p.name} className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
+                    {p.categoryKey}
+                  </span>
+                  {currentLogo && (
+                    <span className="px-1.5 py-0.5 rounded bg-cyan-50 text-cyan-700 text-[9px] font-bold border border-cyan-200">
+                      Logo Kustom
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden p-1 shadow-xs">
+                    {currentLogo ? (
+                      <img src={currentLogo} alt={currentName} className="w-full h-full object-contain" />
+                    ) : (
+                      <ImageIcon className="w-5 h-5 text-slate-400" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <label className="block text-[9px] font-mono text-slate-400">Nama Partner:</label>
+                    <input
+                      type="text"
+                      value={currentName}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setDraft((prev) => ({
+                          ...prev,
+                          partnerCustomizations: {
+                            ...prev.partnerCustomizations,
+                            [p.name]: {
+                              ...prev.partnerCustomizations?.[p.name],
+                              name: val,
+                            },
+                          },
+                        }));
+                      }}
+                      placeholder={p.name}
+                      className="w-full px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 pt-1">
+                  <label className="flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 text-white text-[10px] font-bold hover:bg-slate-800 cursor-pointer transition-colors">
+                    <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>{currentLogo ? 'Ganti Logo' : 'Unggah Logo'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        try {
+                          const dataUrl = await readImageAsDataUrl(file, 400);
+                          setDraft((prev) => ({
+                            ...prev,
+                            partnerCustomizations: {
+                              ...prev.partnerCustomizations,
+                              [p.name]: {
+                                ...prev.partnerCustomizations?.[p.name],
+                                logo: dataUrl,
+                              },
+                            },
+                          }));
+                        } catch (err) {
+                          setFormError(err instanceof Error ? err.message : 'Gagal memuat logo partner.');
+                        }
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+
+                  {(currentLogo || (custom.name !== undefined && custom.name !== p.name)) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDraft((prev) => {
+                          const updated = { ...prev.partnerCustomizations };
+                          delete updated[p.name];
+                          return { ...prev, partnerCustomizations: updated };
+                        });
+                      }}
+                      title="Reset logo & nama partner ke bawaan"
+                      className="p-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 cursor-pointer transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

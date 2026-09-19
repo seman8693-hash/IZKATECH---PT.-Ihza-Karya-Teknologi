@@ -26,10 +26,15 @@ import {
   SECTOR_META,
   checkAdminAuth,
   getOrCreateVisitorSession,
+  getPartnerDisplayName,
+  getPartnerLogo,
   getStoredChatSessions,
   getStoredInquiries,
   markChatAsRead,
+  removePartnerCustomization,
   saveInquiry,
+  savePartnerLogo,
+  savePartnerName,
   sectorPlaceholderImage,
   sendChatMessage,
   setAdminAuth,
@@ -183,6 +188,16 @@ check('layar login menampilkan brand kustom', loginBrandHtml.includes('TESTBRAND
 saveBrandSettings(defaultBrandSettings());
 const logoResetHtml = renderToStaticMarkup(React.createElement(Logo));
 check('wordmark kembali ke default setelah reset', logoResetHtml.includes('IZKATECH'));
+
+// Kustomisasi Logo & Nama Partner
+savePartnerName('Hikvision', 'Hikvision Security Global');
+savePartnerLogo('Hikvision', 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=');
+check('nama partner kustom tersimpan & terbaca', getPartnerDisplayName('Hikvision') === 'Hikvision Security Global');
+check('logo partner kustom tersimpan & terbaca', getPartnerLogo('Hikvision') === 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=');
+
+removePartnerCustomization('Hikvision');
+check('reset partner mengembalikan nama ke bawaan', getPartnerDisplayName('Hikvision') === 'Hikvision');
+check('reset partner menghapus logo kustom', getPartnerLogo('Hikvision') === null);
 
 // Invoice: PPN & PPh 23 + TOTAL TAGIHAN
 const taxInquiry: AdminInquiry = {

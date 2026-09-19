@@ -34,6 +34,8 @@ export interface BrandPartner {
   category: string;
   categoryKey: 'cctv' | 'access' | 'security' | 'telecom' | 'supply';
   tier?: string;
+  /** Logo unggah khusus partner (data URL) — opsional, diatur via Pengaturan */
+  logo?: string | null;
 }
 
 export interface MarketSector {

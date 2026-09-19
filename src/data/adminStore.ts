@@ -582,9 +582,11 @@ export interface BrandSettings {
   favicon: string | null;
   /** Versi monokrom 1:1 untuk stempel / watermark dokumen */
   monoLogo: string | null;
-  colors: BrandPalette;
+      colors: BrandPalette;
   legal: BrandLegal;
   letterhead: BrandLetterhead;
+  /** Kustomisasi logo & nama partner (keyed by partner nama asli) */
+  partnerCustomizations: Record<string, { name?: string; logo: string | null }>;
 }
 
 export const defaultBrandSettings = (): BrandSettings => ({
@@ -611,6 +613,7 @@ export const defaultBrandSettings = (): BrandSettings => ({
     showWatermark: false,
     watermarkOpacity: 15,
   },
+  partnerCustomizations: {},
 });
 
 const BRAND_SETTINGS_KEY = 'izkatech_brand_settings';
@@ -631,6 +634,7 @@ export const getBrandSettings = (): BrandSettings => {
       colors: { ...defaultBrandSettings().colors, ...(parsed.colors || {}) },
       legal: { ...defaultBrandSettings().legal, ...(parsed.legal || {}) },
       letterhead: { ...defaultBrandSettings().letterhead, ...(parsed.letterhead || {}) },
+      partnerCustomizations: { ...defaultBrandSettings().partnerCustomizations, ...(parsed.partnerCustomizations || {}) },
     };
   } catch {
     const seeded = defaultBrandSettings();
@@ -654,6 +658,44 @@ export const saveBrandSettings = (settings: BrandSettings) => {
   } catch (e) {
     console.error('Gagal menyimpan pengaturan brand:', e);
   }
+};
+
+export const getPartnerLogo = (partnerName: string): string | null => {
+  const settings = getBrandSettings();
+  return settings.partnerCustomizations[partnerName]?.logo || null;
+};
+
+export const getPartnerDisplayName = (partnerName: string): string => {
+  const settings = getBrandSettings();
+  return settings.partnerCustomizations[partnerName]?.name?.trim() || partnerName;
+};
+
+export const savePartnerLogo = (partnerName: string, dataUrl: string) => {
+  const settings = getBrandSettings();
+  const current = settings.partnerCustomizations[partnerName] || {};
+  settings.partnerCustomizations = {
+    ...settings.partnerCustomizations,
+    [partnerName]: { ...current, logo: dataUrl },
+  };
+  saveBrandSettings(settings);
+};
+
+export const savePartnerName = (partnerName: string, customName: string) => {
+  const settings = getBrandSettings();
+  const current = settings.partnerCustomizations[partnerName] || {};
+  settings.partnerCustomizations = {
+    ...settings.partnerCustomizations,
+    [partnerName]: { ...current, name: customName },
+  };
+  saveBrandSettings(settings);
+};
+
+export const removePartnerCustomization = (partnerName: string) => {
+  const settings = getBrandSettings();
+  const updated = { ...settings.partnerCustomizations };
+  delete updated[partnerName];
+  settings.partnerCustomizations = updated;
+  saveBrandSettings(settings);
 };
 
 /** Terapkan favicon dari pengaturan brand (panggil saat boot & saat berubah). */
