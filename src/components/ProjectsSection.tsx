@@ -148,8 +148,8 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ lang }) => {
               className="bg-white/90 border border-slate-200/90 hover:border-cyan-500/50 rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:shadow-cyan-950/30 group text-left relative"
             >
               <div>
-                {/* Foto Dokumentasi Proyek */}
-                <div className="relative -m-6 mb-5 h-44 overflow-hidden rounded-t-2xl bg-white">
+                {/* Foto Dokumentasi Proyek (diperbesar memenuhi area kartu atas) */}
+                <div className="relative -m-6 mb-5 h-72 overflow-hidden rounded-t-2xl bg-white">
                   <img
                     src={project.image || sectorPlaceholderImage(project.sector, project.sectorLabel)}
                     alt={project.name}
