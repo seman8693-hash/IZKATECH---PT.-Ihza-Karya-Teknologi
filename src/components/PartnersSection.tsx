@@ -300,15 +300,17 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ lang }) => {
                 key={index}
                 className="bg-white/95 border border-slate-200/90 hover:border-cyan-500/50 rounded-xl p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-lg hover:shadow-cyan-950/20 group text-left"
               >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="p-1.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center min-w-[36px] min-h-[36px]">
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <span className="flex-1 h-16 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center p-2 overflow-hidden">
                     {customLogo ? (
-                      <img src={customLogo} alt={displayName} className="w-8 h-8 object-contain rounded" />
+                      <img src={customLogo} alt={displayName} className="max-h-12 w-auto max-w-full object-contain" />
                     ) : (
-                      getCategoryIcon(brand.categoryKey)
+                      <span className="scale-[1.75] flex items-center justify-center">
+                        {getCategoryIcon(brand.categoryKey)}
+                      </span>
                     )}
                   </span>
-                  <span className="text-[10px] uppercase tracking-wider text-slate-500 group-hover:text-cyan-600 transition-colors font-mono">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-500 group-hover:text-cyan-600 transition-colors font-mono shrink-0 pt-1">
                     Official
                   </span>
                 </div>
