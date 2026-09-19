@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { COMPANY_INFO } from '../data/companyData.ts';
 import { MessageSquare, Calculator, ArrowUp, Phone } from 'lucide-react';
 
@@ -28,7 +28,7 @@ export const FloatingActions: React.FC<FloatingActionsProps> = ({ onOpenEstimato
       {showBackToTop && (
         <button
           onClick={scrollToTop}
-          className="p-3 rounded-full bg-slate-900/90 text-slate-300 hover:text-white border border-slate-700 shadow-xl backdrop-blur-md hover:border-cyan-500 transition-all cursor-pointer transform hover:scale-105"
+          className="p-3 rounded-full bg-white/90 text-slate-600 hover:text-white border border-slate-200 shadow-xl backdrop-blur-md hover:border-cyan-500 transition-all cursor-pointer transform hover:scale-105"
           aria-label="Kembali ke atas"
         >
           <ArrowUp className="w-4 h-4" />
@@ -38,10 +38,10 @@ export const FloatingActions: React.FC<FloatingActionsProps> = ({ onOpenEstimato
       {/* Estimator Button */}
       <button
         onClick={onOpenEstimator}
-        className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900/95 text-slate-100 hover:text-white border border-cyan-500/50 shadow-xl backdrop-blur-md transition-all text-xs font-semibold cursor-pointer hover:bg-slate-800 hover:scale-105"
+        className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/95 text-slate-900 hover:text-white border border-cyan-500/50 shadow-xl backdrop-blur-md transition-all text-xs font-semibold cursor-pointer hover:bg-slate-100 hover:scale-105"
         title="Kalkulator Kebutuhan / RFP"
       >
-        <Calculator className="w-4 h-4 text-cyan-400" />
+        <Calculator className="w-4 h-4 text-cyan-600" />
         <span>Kalkulator RFP</span>
       </button>
 
@@ -49,10 +49,10 @@ export const FloatingActions: React.FC<FloatingActionsProps> = ({ onOpenEstimato
       {onOpenLiveChat && (
         <button
           onClick={onOpenLiveChat}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900/95 text-slate-100 hover:text-white border border-blue-500/50 shadow-xl backdrop-blur-md transition-all text-xs font-semibold cursor-pointer hover:bg-slate-800 hover:scale-105"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/95 text-slate-900 hover:text-white border border-blue-500/50 shadow-xl backdrop-blur-md transition-all text-xs font-semibold cursor-pointer hover:bg-slate-100 hover:scale-105"
           title="Live Chat dengan Tim IZKATECH"
         >
-          <MessageSquare className="w-4 h-4 text-blue-400" />
+          <MessageSquare className="w-4 h-4 text-blue-600" />
           <span>Live Chat</span>
         </button>
       )}
