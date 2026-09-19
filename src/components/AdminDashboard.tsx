@@ -19,7 +19,7 @@ import {
   deleteChatSession
 } from '../data/adminStore.ts';
 import { AdminInquiry, AdminProject, ChatSession } from '../types/admin.ts';
-import { COMPANY_INFO, SERVICES, BRAND_PARTNERS } from '../data/companyData.ts';
+import { COMPANY_INFO, SERVICES } from '../data/companyData.ts';
 import { ChatCRMTab } from './ChatCRMTab.tsx';
 import { DocumentGeneratorModal } from './DocumentGeneratorModal.tsx';
 import { AddInquiryModal } from './dashboard/AddInquiryModal.tsx';
@@ -924,25 +924,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
                       <h4 className="text-sm font-bold text-slate-900">{s.title}</h4>
                       <p className="text-xs text-slate-500 mt-1">{s.description}</p>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Brand Partners */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6">
-              <h3 className="text-base font-bold text-slate-900 mb-2 font-display">
-                Ekosistem Prinsipal Brand Resmi (20+ Partners)
-              </h3>
-              <p className="text-xs text-slate-500 mb-6">
-                Prinsipal perangkat keras, sekuriti, dan software yang didukung oleh PT. Ihza Karya Teknologi.
-              </p>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                {BRAND_PARTNERS.map((brand) => (
-                  <div key={brand.name} className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-1">
-                    <div className="font-bold text-xs text-slate-900">{brand.name}</div>
-                    <div className="text-[10px] text-cyan-600 font-mono">{brand.category}</div>
                   </div>
                 ))}
               </div>
