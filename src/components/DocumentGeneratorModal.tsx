@@ -45,6 +45,9 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
   const [items, setItems] = useState<DocItem[]>([
     { description: inquiry.serviceInterest[0] || 'Layanan ICT & ME', qty: 1, unit: 'Paket', unitPrice: 0 },
   ]);
+  // Pajak dokumen: PPN ditambahkan ke tagihan, PPh 23 dipotong (dapat diubah per dokumen)
+  const [ppnPercent, setPpnPercent] = useState<number>(11);
+  const [pphPercent, setPphPercent] = useState<number>(docType === 'INVOICE' ? 2 : 0);
   const [terms, setTerms] = useState(
     docType === 'SPH'
       ? '1. Penawaran harga berlaku selama 30 hari kalender.\n2. Harga belum termasuk PPN 11%.\n3. Pembayaran: DP 50% saat SPK, 50% setelah serah terima (BAST).\n4. Waktu pelaksanaan menyesuaikan jadwal survei & kesepakatan.'
@@ -58,6 +61,12 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
   // Identitas brand aktif (diatur dari menu Pengaturan — single source of truth)
   const brand = getBrandSettings();
   const brandName = brand.legal.companyName || COMPANY_INFO.name;
+
+  // Perhitungan pajak: DPP (subtotal) + PPN - PPh 23 (dipotong)
+  const dpp = total;
+  const ppnAmount = Math.round((dpp * ppnPercent) / 100);
+  const pphAmount = Math.round((dpp * pphPercent) / 100);
+  const grandTotal = dpp + ppnAmount - pphAmount;
 
   const updateItem = (idx: number, patch: Partial<DocItem>) =>
     setItems(items.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
@@ -167,9 +176,57 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
                   </div>
                 </div>
               ))}
-              <div className="text-right text-xs font-bold text-cyan-700">
-                Total: {formatRupiah(total)}
+              <div className="flex items-center justify-between text-xs font-bold text-cyan-700">
+                <span>DPP (Subtotal)</span>
+                <span>{formatRupiah(total)}</span>
               </div>
+
+              {/* Pajak dokumen: PPN & PPh 23 — untuk SPH & Invoice */}
+              {docType !== 'PKS' && (
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                  <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Pajak Dokumen</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="block">
+                      <span className="text-[10px] text-slate-500">PPN (%)</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={ppnPercent}
+                        onChange={(e) => setPpnPercent(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                        className="w-full mt-0.5 px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-cyan-400"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="text-[10px] text-slate-500">PPh 23 (%) · dipotong</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={pphPercent}
+                        onChange={(e) => setPphPercent(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                        className="w-full mt-0.5 px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-cyan-400"
+                      />
+                    </label>
+                  </div>
+                  <div className="space-y-0.5 text-[10px] text-slate-600">
+                    <div className="flex justify-between">
+                      <span>PPN {ppnPercent}%</span>
+                      <span>{formatRupiah(ppnAmount)}</span>
+                    </div>
+                    {pphPercent > 0 && (
+                      <div className="flex justify-between">
+                        <span>PPh 23 ({pphPercent}%) dipotong</span>
+                        <span>-{formatRupiah(pphAmount)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-bold text-slate-900 border-t border-slate-200 pt-1">
+                      <span>Total Tagihan</span>
+                      <span>{formatRupiah(grandTotal)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <label className="block">
@@ -264,8 +321,26 @@ export const DocumentGeneratorModal: React.FC<DocumentGeneratorModalProps> = ({ 
                         </tr>
                       ))}
                       <tr className="bg-slate-100 font-bold">
-                        <td colSpan={5} className="border border-slate-400 p-1.5 text-right">TOTAL</td>
+                        <td colSpan={5} className="border border-slate-400 p-1.5 text-right">DPP (SUBTOTAL)</td>
                         <td className="border border-slate-400 p-1.5 text-right">{formatRupiah(total)}</td>
+                      </tr>
+                      {ppnPercent > 0 && (
+                        <tr>
+                          <td colSpan={5} className="border border-slate-400 p-1.5 text-right">PPN {ppnPercent}%</td>
+                          <td className="border border-slate-400 p-1.5 text-right">{formatRupiah(ppnAmount)}</td>
+                        </tr>
+                      )}
+                      {pphPercent > 0 && (
+                        <tr>
+                          <td colSpan={5} className="border border-slate-400 p-1.5 text-right">
+                            PPh 23 ({pphPercent}%) &mdash; Dipotong
+                          </td>
+                          <td className="border border-slate-400 p-1.5 text-right">-{formatRupiah(pphAmount)}</td>
+                        </tr>
+                      )}
+                      <tr className="bg-cyan-50 font-bold">
+                        <td colSpan={5} className="border border-slate-400 p-1.5 text-right">TOTAL TAGIHAN</td>
+                        <td className="border border-slate-400 p-1.5 text-right">{formatRupiah(grandTotal)}</td>
                       </tr>
                     </tbody>
                   </table>

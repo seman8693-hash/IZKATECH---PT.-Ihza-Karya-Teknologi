@@ -19,7 +19,9 @@ import App from '../src/App.tsx';
 import { AdminDashboard } from '../src/components/AdminDashboard.tsx';
 import { SettingsTab } from '../src/components/dashboard/SettingsTab.tsx';
 import { Logo } from '../src/components/Logo.tsx';
+import { DocumentGeneratorModal } from '../src/components/DocumentGeneratorModal.tsx';
 import { defaultBrandSettings, saveBrandSettings } from '../src/data/adminStore.ts';
+import { AdminInquiry } from '../src/types/admin.ts';
 import {
   SECTOR_META,
   checkAdminAuth,
@@ -181,6 +183,29 @@ check('layar login menampilkan brand kustom', loginBrandHtml.includes('TESTBRAND
 saveBrandSettings(defaultBrandSettings());
 const logoResetHtml = renderToStaticMarkup(React.createElement(Logo));
 check('wordmark kembali ke default setelah reset', logoResetHtml.includes('IZKATECH'));
+
+// Invoice: PPN & PPh 23 + TOTAL TAGIHAN
+const taxInquiry: AdminInquiry = {
+  id: 'INQ-TEST-TAX',
+  timestamp: '2026-09-19 10:00',
+  clientName: 'Bpk. Uji Pajak',
+  companyName: 'PT Uji Pajak Jaya',
+  phone: '0812-0000-0000',
+  email: 'uji@pajak.co.id',
+  serviceInterest: ['Surveillance (CCTV Systems)'],
+  notes: 'Uji render pajak.',
+  source: 'kontak',
+  status: 'deal',
+  priority: 'normal',
+};
+const invoiceHtml = renderToStaticMarkup(
+  React.createElement(DocumentGeneratorModal, { inquiry: taxInquiry, docType: 'INVOICE', onClose: () => undefined })
+);
+check(
+  'invoice memuat PPN 11%, PPh 23 (2%) & TOTAL TAGIHAN',
+  invoiceHtml.includes('PPN 11%') && invoiceHtml.includes('PPh 23 (2%)') && invoiceHtml.includes('TOTAL TAGIHAN')
+);
+check('invoice menampilkan label DPP (SUBTOTAL)', invoiceHtml.includes('DPP (SUBTOTAL)'));
 
 // ---------------------------------------------------------------- ringkasan
 console.log('\n---------------------------------------------');
