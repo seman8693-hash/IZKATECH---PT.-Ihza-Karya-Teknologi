@@ -8,13 +8,14 @@ import {
   Layers,
   Headphones,
   TrendingUp,
+  HardDriveDownload,
   Settings,
   LogOut,
   ExternalLink,
   X,
 } from 'lucide-react';
 
-export type AdminTab = 'overview' | 'inquiries' | 'projects' | 'services' | 'chat' | 'reports' | 'settings';
+export type AdminTab = 'overview' | 'inquiries' | 'projects' | 'services' | 'chat' | 'reports' | 'backup' | 'settings';
 
 interface SidebarCounts {
   inquiries: number;
@@ -41,6 +42,7 @@ const NAV_ITEMS: { tab: AdminTab; label: string; icon: React.FC<{ className?: st
   { tab: 'services', label: 'Layanan & Brand', icon: Layers },
   { tab: 'chat', label: 'Live Chat CRM', icon: Headphones },
   { tab: 'reports', label: 'Laporan & Analitik', icon: TrendingUp },
+  { tab: 'backup', label: 'Pusat Data & Cadangan', icon: HardDriveDownload },
   { tab: 'settings', label: 'Pengaturan', icon: Settings },
 ];
 

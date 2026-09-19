@@ -28,6 +28,7 @@ import { StatsCard } from './dashboard/StatsCard.tsx';
 import { ProjectFormModal } from './dashboard/ProjectFormModal.tsx';
 import { SettingsTab } from './dashboard/SettingsTab.tsx';
 import { ReportsTab } from './dashboard/ReportsTab.tsx';
+import { BackupTab } from './dashboard/BackupTab.tsx';
 import { csvDateStamp, downloadCsv } from '../utils/reportUtils.ts';
 import { 
   Lock, 
@@ -983,6 +984,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWebsite 
             TAB 6: LAPORAN & ANALITIK (rekap prospek, konversi & portofolio)
             ------------------------------------------------------------- */}
         {currentTab === 'reports' && <ReportsTab inquiries={inquiries} projects={projects} />}
+
+        {/* -------------------------------------------------------------
+            TAB 7: PUSAT DATA & CADANGAN (backup/restore, pemakaian storage)
+            ------------------------------------------------------------- */}
+        {currentTab === 'backup' && <BackupTab onDataRestored={loadData} />}
 
         </main>
       </div>

@@ -9,6 +9,8 @@
  *  E. Render SSR layar login admin & halaman publik
  *  F. Laporan & analitik (reportUtils: filter periode, corong pipeline,
  *     konversi sales, statistik portofolio, ekspor CSV) + render tab Laporan
+ *  G. Pusat data & cadangan (bundel backup, validasi, merge/replace,
+ *     pemakaian storage, reset) + regresi manifest PWA sub-path
  *
  * Jalankan: npm run test
  */
@@ -22,6 +24,8 @@ import { AdminDashboard } from '../src/components/AdminDashboard.tsx';
 import { SettingsTab } from '../src/components/dashboard/SettingsTab.tsx';
 import { ReportsTab } from '../src/components/dashboard/ReportsTab.tsx';
 import { AdminSidebar } from '../src/components/dashboard/AdminSidebar.tsx';
+import { BackupTab } from '../src/components/dashboard/BackupTab.tsx';
+import manifestJson from '../public/manifest.json';
 import { Logo } from '../src/components/Logo.tsx';
 import { DocumentGeneratorModal } from '../src/components/DocumentGeneratorModal.tsx';
 import { defaultBrandSettings, saveBrandSettings } from '../src/data/adminStore.ts';
@@ -29,11 +33,13 @@ import { AdminInquiry, AdminProject } from '../src/types/admin.ts';
 import {
   SECTOR_META,
   checkAdminAuth,
+  getBrandSettings,
   getOrCreateVisitorSession,
   getPartnerDisplayName,
   getPartnerLogo,
   getStoredChatSessions,
   getStoredInquiries,
+  getStoredProjects,
   markChatAsRead,
   removePartnerCustomization,
   saveInquiry,
@@ -58,6 +64,16 @@ import {
   rankProjectsByValue,
   summarizeConversion,
 } from '../src/utils/reportUtils.ts';
+import type { AdminBackupBundle } from '../src/data/adminStore.ts';
+import {
+  BACKUP_APP_ID,
+  BACKUP_VERSION,
+  applyBackup,
+  buildBackupBundle,
+  getStorageUsage,
+  resetAllData,
+  validateBackup,
+} from '../src/data/adminStore.ts';
 
 let passed = 0;
 let failed = 0;
@@ -488,6 +504,187 @@ check(
   'menu sidebar lama tetap tersedia',
   sidebarHtml.includes('Prospek &amp; SPH/PKS') && sidebarHtml.includes('Pengaturan')
 );
+
+// ---------------------------------------------------------------- G
+section('G. Pusat data & cadangan');
+
+// Bundel cadangan diambil sebelum ada perubahan agar dapat dipakai sebagai acuan
+const backupBundle = buildBackupBundle();
+check(
+  'bundel cadangan memakai penanda & versi aplikasi',
+  backupBundle.app === BACKUP_APP_ID && backupBundle.version === BACKUP_VERSION,
+  { app: backupBundle.app, version: backupBundle.version }
+);
+check(
+  'jumlah data pada bundel sesuai isi store',
+  backupBundle.counts.inquiries === getStoredInquiries().length &&
+    backupBundle.counts.projects === getStoredProjects().length &&
+    backupBundle.counts.chatSessions === getStoredChatSessions().length,
+  backupBundle.counts
+);
+check('bundel cadangan memuat identitas brand', backupBundle.data.brandSettings !== null);
+
+// Validasi berkas cadangan
+check('validateBackup menolak JSON yang rusak', validateBackup('{bukan json').ok === false);
+check(
+  'validateBackup menolak berkas aplikasi lain',
+  validateBackup(JSON.stringify({ app: 'aplikasi-lain', version: 1, data: {} })).ok === false
+);
+check(
+  'validateBackup menolak versi cadangan yang lebih baru',
+  validateBackup(JSON.stringify({ app: BACKUP_APP_ID, version: BACKUP_VERSION + 1, data: {} })).ok === false
+);
+check(
+  'validateBackup menolak berkas tanpa bagian data',
+  validateBackup(JSON.stringify({ app: BACKUP_APP_ID, version: BACKUP_VERSION })).ok === false
+);
+check('validateBackup menerima bundel hasil unduhan', validateBackup(JSON.stringify(backupBundle)).ok === true);
+
+const tanpaBrand = validateBackup(
+  JSON.stringify({
+    app: BACKUP_APP_ID,
+    version: BACKUP_VERSION,
+    exportedAt: '2026-09-19T00:00:00.000Z',
+    data: { inquiries: [], projects: [], chatSessions: [] },
+  })
+);
+check(
+  'validateBackup menerima cadangan tanpa pengaturan brand',
+  tanpaBrand.ok === true && tanpaBrand.bundle.data.brandSettings === null
+);
+
+// Indikator pemakaian penyimpanan
+const storageUsage = getStorageUsage();
+check(
+  'indikator penyimpanan melaporkan 5 kelompok data & kuota 5 MB',
+  storageUsage.entries.length === 5 && storageUsage.quotaBytes === 5 * 1024 * 1024,
+  { entries: storageUsage.entries.length, quota: storageUsage.quotaBytes }
+);
+check(
+  'indikator penyimpanan menjumlahkan byte tiap kelompok',
+  storageUsage.totalBytes === storageUsage.entries.reduce((sum, entry) => sum + entry.bytes, 0) &&
+    storageUsage.totalBytes > 0,
+  storageUsage.totalBytes
+);
+
+// Regresi: manifest PWA harus tetap kompatibel dengan sub-path GitHub Pages
+check(
+  'manifest PWA memakai path relatif (aman di sub-path GitHub Pages)',
+  manifestJson.start_url === './' && manifestJson.scope === './' && manifestJson.icons[0].src === './favicon.svg',
+  { start_url: manifestJson.start_url, scope: manifestJson.scope, icon: manifestJson.icons[0].src }
+);
+
+// Reset mengembalikan data contoh bawaan
+resetAllData();
+check(
+  'resetAllData memuat kembali data contoh bawaan',
+  getStoredInquiries().length > 0 && getStoredProjects().length > 0,
+  { inquiries: getStoredInquiries().length, projects: getStoredProjects().length }
+);
+
+// Pulang-balik penuh: reset lalu pulihkan dari bundel cadangan
+const restored = applyBackup(backupBundle, 'replace');
+check(
+  'pemulihan mode replace mengembalikan jumlah prospek & proyek',
+  restored.inquiries.length === backupBundle.counts.inquiries &&
+    restored.projects.length === backupBundle.counts.projects,
+  {
+    want: backupBundle.counts,
+    got: { inquiries: restored.inquiries.length, projects: restored.projects.length },
+  }
+);
+check(
+  'hasil pemulihan benar-benar tersimpan di storage',
+  getStoredInquiries().length === backupBundle.counts.inquiries &&
+    getStoredProjects().length === backupBundle.counts.projects &&
+    getStoredChatSessions().length === backupBundle.counts.chatSessions
+);
+// Mode gabung: prospek lokal yang tidak ada di cadangan tetap dipertahankan
+const prospekLokal = saveInquiry({
+  clientName: 'Prospek Lokal Saja',
+  companyName: 'PT Lokal Nusantara',
+  phone: '0800-111-222',
+  email: 'lokal@izkatech.co.id',
+  serviceInterest: ['Surveillance (CCTV Systems)'],
+  notes: 'Hanya ada di storage lokal, tidak ada di berkas cadangan.',
+  source: 'manual',
+});
+const hasilGabung = applyBackup(backupBundle, 'merge');
+check(
+  'mode gabung mempertahankan prospek lokal yang tidak ada di cadangan',
+  hasilGabung.inquiries.some((item) => item.id === prospekLokal.id) &&
+    hasilGabung.inquiries.length === backupBundle.counts.inquiries + 1,
+  { total: hasilGabung.inquiries.length, diharapkan: backupBundle.counts.inquiries + 1 }
+);
+check(
+  'mode gabung tidak menghasilkan data ganda',
+  new Set(hasilGabung.inquiries.map((item) => item.id)).size === hasilGabung.inquiries.length,
+  hasilGabung.inquiries.length
+);
+
+// Identitas brand: dipertahankan saat merge, ikut ditimpa saat replace
+const brandGabung = defaultBrandSettings();
+brandGabung.legal.brandName = 'BRANDGABUNG';
+saveBrandSettings(brandGabung);
+
+applyBackup(backupBundle, 'merge');
+check(
+  'mode gabung tidak mengubah identitas brand yang aktif',
+  getBrandSettings().legal.brandName === 'BRANDGABUNG',
+  getBrandSettings().legal.brandName
+);
+
+applyBackup(backupBundle, 'replace');
+check(
+  'mode replace memulihkan identitas brand dari cadangan',
+  getBrandSettings().legal.brandName === (backupBundle.data.brandSettings?.legal.brandName || ''),
+  getBrandSettings().legal.brandName
+);
+
+// Cadangan minimal tanpa bagian brand: data ditimpa, identitas brand tetap aman
+const brandSebelumMinimal = getBrandSettings().legal.brandName;
+const bundelMinimal: AdminBackupBundle = {
+  app: BACKUP_APP_ID,
+  version: BACKUP_VERSION,
+  exportedAt: '',
+  counts: { inquiries: 0, projects: 0, chatSessions: 0 },
+  data: { inquiries: [], projects: [], chatSessions: [], brandSettings: null },
+};
+applyBackup(bundelMinimal, 'replace');
+check(
+  'replace tanpa brandSettings tidak menghapus identitas brand',
+  getStoredInquiries().length === 0 && getBrandSettings().legal.brandName === brandSebelumMinimal,
+  { inquiries: getStoredInquiries().length, brand: getBrandSettings().legal.brandName }
+);
+
+// Render tab Pusat Data & Cadangan
+const backupHtml = renderToStaticMarkup(
+  React.createElement(BackupTab, { onDataRestored: () => undefined })
+);
+check(
+  'tab Pusat Data & Cadangan ter-render beserta seluruh panelnya',
+  backupHtml.includes('Pusat Data &amp; Cadangan') &&
+    backupHtml.includes('Unduh Cadangan Data') &&
+    backupHtml.includes('Pemakaian Penyimpanan Browser') &&
+    backupHtml.includes('Pulihkan dari Berkas Cadangan') &&
+    backupHtml.includes('Zona Berbahaya'),
+  { len: backupHtml.length }
+);
+check(
+  'tombol unduh, pemulihan & reset tersedia di tab cadangan',
+  backupHtml.includes('Unduh Cadangan (.json)') &&
+    backupHtml.includes('Terapkan Pemulihan') &&
+    backupHtml.includes('Reset ke Data Contoh')
+);
+check(
+  'pilihan mode pemulihan gabung & timpa dijelaskan',
+  backupHtml.includes('Gabung (aman)') && backupHtml.includes('Timpa seluruhnya (hati-hati)')
+);
+check(
+  'peringatan penyimpanan lokal tampil di tab cadangan',
+  backupHtml.includes('Data tersimpan hanya di browser ini (localStorage)')
+);
+check('sidebar admin memuat menu "Pusat Data & Cadangan"', sidebarHtml.includes('Pusat Data &amp; Cadangan'));
 
 // ---------------------------------------------------------------- ringkasan
 console.log('\n---------------------------------------------');

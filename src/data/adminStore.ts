@@ -743,17 +743,29 @@ export const applyBrandManifest = () => {
         URL.revokeObjectURL(brandManifestUrl);
         brandManifestUrl = null;
       }
-      manifestLink.href = '/manifest.json';
+      manifestLink.href = './manifest.json';
       document.querySelector<HTMLLinkElement>('link#izkatech-apple-icon')?.remove();
       return;
     }
+
+    // Manifest dinamis disajikan sebagai blob: URL, sehingga path relatif tidak
+    // dapat diandalkan — start_url/scope disusun absolut dari URL dasar aplikasi
+    // agar tetap benar saat di-host di sub-path (mis. GitHub Pages).
+    const appBase = (() => {
+      try {
+        return new URL('.', document.baseURI).href;
+      } catch {
+        return undefined;
+      }
+    })();
 
     const mime = guessAssetMime(icon);
     const dynamicManifest = {
       name: `${brand.legal.brandName} - ${brand.legal.companyName}`,
       short_name: brand.legal.brandName,
       description: brand.legal.tagline,
-      start_url: '/',
+      start_url: appBase,
+      scope: appBase,
       display: 'standalone',
       background_color: brand.colors.dark,
       theme_color: brand.colors.primary,
@@ -986,4 +998,243 @@ export const deleteChatSession = (sessionId: string) => {
   const updated = sessions.filter(s => s.id !== sessionId);
   saveChatSessions(updated);
   return updated;
+};
+
+// -------------------------------------------------------------
+// BACKUP & RESTORE (Pusat Data & Cadangan)
+//
+// Seluruh data portal admin tersimpan di localStorage browser — sehingga
+// hanya ada di perangkat ini dan rawan hilang (clear browsing data / ganti
+// perangkat). Fungsi di bawah menyediakan cadangan .json yang dapat
+// diunduh & dipulihkan kembali.
+// -------------------------------------------------------------
+export const BACKUP_APP_ID = 'izkatech-admin-backup';
+export const BACKUP_VERSION = 1;
+
+export interface AdminBackupCounts {
+  inquiries: number;
+  projects: number;
+  chatSessions: number;
+}
+
+export interface AdminBackupBundle {
+  /** Penanda jenis berkas agar cadangan aplikasi lain tidak diterima */
+  app: string;
+  version: number;
+  exportedAt: string;
+  counts: AdminBackupCounts;
+  data: {
+    inquiries: AdminInquiry[];
+    projects: AdminProject[];
+    chatSessions: ChatSession[];
+    /** null bila bagian identitas brand tidak ada di berkas cadangan */
+    brandSettings: BrandSettings | null;
+  };
+}
+
+export type BackupImportMode = 'merge' | 'replace';
+
+export type BackupValidation =
+  | { ok: true; bundle: AdminBackupBundle }
+  | { ok: false; error: string };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const toArray = <T,>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
+
+/** Membaca ulang seluruh data aktif menjadi satu bundel cadangan. */
+export const buildBackupBundle = (): AdminBackupBundle => {
+  const inquiries = getStoredInquiries();
+  const projects = getStoredProjects();
+  const chatSessions = getStoredChatSessions();
+  return {
+    app: BACKUP_APP_ID,
+    version: BACKUP_VERSION,
+    exportedAt: new Date().toISOString(),
+    counts: {
+      inquiries: inquiries.length,
+      projects: projects.length,
+      chatSessions: chatSessions.length,
+    },
+    data: {
+      inquiries,
+      projects,
+      chatSessions,
+      brandSettings: getBrandSettings(),
+    },
+  };
+};
+
+/**
+ * Memvalidasi isi berkas cadangan (string JSON maupun objek).
+ * Pesan galat berbahasa Indonesia agar dapat ditampilkan apa adanya di UI.
+ */
+export const validateBackup = (raw: string | unknown): BackupValidation => {
+  let parsed: unknown = raw;
+
+  if (typeof raw === 'string') {
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return { ok: false, error: 'Berkas tidak dapat dibaca: bukan format JSON yang valid.' };
+    }
+  }
+
+  if (!isRecord(parsed)) {
+    return { ok: false, error: 'Isi berkas tidak dikenali sebagai cadangan.' };
+  }
+
+  if (parsed.app !== BACKUP_APP_ID) {
+    return { ok: false, error: 'Berkas ini bukan cadangan Portal Admin IZKATECH.' };
+  }
+
+  const version = typeof parsed.version === 'number' ? parsed.version : BACKUP_VERSION;
+  if (version > BACKUP_VERSION) {
+    return {
+      ok: false,
+      error: `Versi cadangan (v${version}) lebih baru daripada yang didukung aplikasi (v${BACKUP_VERSION}).`,
+    };
+  }
+
+  if (!isRecord(parsed.data)) {
+    return { ok: false, error: 'Bagian data cadangan tidak ditemukan di dalam berkas.' };
+  }
+
+  const { data } = parsed;
+  const inquiries = toArray<AdminInquiry>(data.inquiries);
+  const projects = toArray<AdminProject>(data.projects);
+  const chatSessions = toArray<ChatSession>(data.chatSessions);
+
+  return {
+    ok: true,
+    bundle: {
+      app: BACKUP_APP_ID,
+      version,
+      exportedAt: typeof parsed.exportedAt === 'string' ? parsed.exportedAt : '',
+      counts: {
+        inquiries: inquiries.length,
+        projects: projects.length,
+        chatSessions: chatSessions.length,
+      },
+      data: {
+        inquiries,
+        projects,
+        chatSessions,
+        brandSettings: isRecord(data.brandSettings) ? (data.brandSettings as unknown as BrandSettings) : null,
+      },
+    },
+  };
+};
+
+/** Menggabungkan dua daftar berdasarkan `id`; data cadangan menang bila id sama. */
+const mergeById = <T extends { id: string }>(current: T[], incoming: T[]): T[] => {
+  const byId = new Map(current.map((item) => [item.id, item]));
+  incoming.forEach((item) => byId.set(item.id, item));
+  return Array.from(byId.values());
+};
+
+export interface BackupApplyResult {
+  inquiries: AdminInquiry[];
+  projects: AdminProject[];
+  chatSessions: ChatSession[];
+}
+
+/**
+ * Memulihkan data dari bundel cadangan.
+ *
+ * - `merge`   : gabungkan berdasarkan ID (pengaturan brand tidak diubah)
+ * - `replace` : timpa seluruh data, termasuk identitas & aset brand
+ */
+export const applyBackup = (
+  bundle: AdminBackupBundle,
+  mode: BackupImportMode = 'merge'
+): BackupApplyResult => {
+  const incoming = bundle.data;
+
+  const inquiries =
+    mode === 'replace' ? incoming.inquiries : mergeById(getStoredInquiries(), incoming.inquiries);
+  const projects =
+    mode === 'replace' ? incoming.projects : mergeById(getStoredProjects(), incoming.projects);
+  const chatSessions =
+    mode === 'replace'
+      ? incoming.chatSessions
+      : mergeById(getStoredChatSessions(), incoming.chatSessions);
+
+  try {
+    localStorage.setItem(INQUIRIES_STORAGE_KEY, JSON.stringify(inquiries));
+    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+  } catch (e) {
+    console.error('Gagal memulihkan data prospek/proyek', e);
+  }
+
+  // saveChatSessions & saveBrandSettings sekaligus memancarkan event sinkronisasi
+  saveChatSessions(chatSessions);
+  if (mode === 'replace' && incoming.brandSettings) {
+    saveBrandSettings(incoming.brandSettings);
+  }
+
+  return { inquiries, projects, chatSessions };
+};
+
+/** Mengembalikan seluruh data ke kondisi awal (data contoh bawaan). */
+export const resetAllData = () => {
+  try {
+    [
+      INQUIRIES_STORAGE_KEY,
+      PROJECTS_STORAGE_KEY,
+      CHAT_SESSIONS_STORAGE_KEY,
+      BRAND_SETTINGS_KEY,
+      CUSTOM_LOGO_KEY,
+      CURRENT_VISITOR_SESSION_KEY,
+    ].forEach((key) => localStorage.removeItem(key));
+    window.dispatchEvent(new Event('izkatech_chat_updated'));
+    window.dispatchEvent(new Event('izkatech_logo_updated'));
+  } catch (e) {
+    console.error('Gagal mereset data portal', e);
+  }
+};
+
+export interface StorageUsageEntry {
+  key: string;
+  label: string;
+  bytes: number;
+}
+
+export interface StorageUsage {
+  entries: StorageUsageEntry[];
+  totalBytes: number;
+  /** Perkiraan kuota localStorage (batas berbeda tiap browser) */
+  quotaBytes: number;
+}
+
+/**
+ * Perkiraan pemakaian localStorage per kelompok data. Nilai byte dihitung
+ * sebagai 2× jumlah karakter karena localStorage menyimpan string UTF-16.
+ */
+export const getStorageUsage = (): StorageUsage => {
+  const tracked: { key: string; label: string }[] = [
+    { key: INQUIRIES_STORAGE_KEY, label: 'Data prospek' },
+    { key: PROJECTS_STORAGE_KEY, label: 'Proyek portofolio' },
+    { key: CHAT_SESSIONS_STORAGE_KEY, label: 'Sesi live chat' },
+    { key: BRAND_SETTINGS_KEY, label: 'Identitas & aset brand' },
+    { key: CUSTOM_LOGO_KEY, label: 'Logo kustom (cadangan lama)' },
+  ];
+
+  const entries = tracked.map(({ key, label }) => {
+    let bytes = 0;
+    try {
+      const value = localStorage.getItem(key);
+      bytes = value ? value.length * 2 : 0;
+    } catch {
+      bytes = 0;
+    }
+    return { key, label, bytes };
+  });
+
+  return {
+    entries,
+    totalBytes: entries.reduce((sum, entry) => sum + entry.bytes, 0),
+    quotaBytes: 5 * 1024 * 1024,
+  };
 };

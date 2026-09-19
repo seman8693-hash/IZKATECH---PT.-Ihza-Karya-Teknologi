@@ -306,18 +306,12 @@ export const buildCsv = (headers: string[], rows: (string | number)[][]): string
   [headers.map(csvEscape).join(','), ...rows.map((row) => row.map(csvEscape).join(','))].join('\n');
 
 /**
- * Mengunduh CSV sebagai berkas. Ditambahkan BOM UTF-8 agar Excel membaca
- * karakter Indonesia dengan benar.
+ * Mengunduh berkas teks (CSV/JSON) melalui Blob + anchor sementara.
+ * Mengembalikan false bila lingkungan tidak mendukung unduhan.
  */
-export const downloadCsv = (
-  filename: string,
-  headers: string[],
-  rows: (string | number)[][]
-): void => {
+export const downloadTextFile = (filename: string, content: string, mime: string): boolean => {
   try {
-    const blob = new Blob(['\uFEFF' + buildCsv(headers, rows)], {
-      type: 'text/csv;charset=utf-8;',
-    });
+    const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -326,7 +320,26 @@ export const downloadCsv = (
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    return true;
   } catch (error) {
-    console.error('Gagal mengunduh CSV laporan:', error);
+    console.error(`Gagal mengunduh berkas ${filename}:`, error);
+    return false;
   }
+};
+
+/**
+ * Mengunduh CSV sebagai berkas. Ditambahkan BOM UTF-8 agar Excel membaca
+ * karakter Indonesia dengan benar.
+ */
+export const downloadCsv = (
+  filename: string,
+  headers: string[],
+  rows: (string | number)[][]
+): void => {
+  downloadTextFile(filename, '\uFEFF' + buildCsv(headers, rows), 'text/csv;charset=utf-8;');
+};
+
+/** Mengunduh cadangan/berkas JSON dengan format rapi (2 spasi). */
+export const downloadJson = (filename: string, payload: unknown): void => {
+  downloadTextFile(filename, JSON.stringify(payload, null, 2), 'application/json;charset=utf-8;');
 };
